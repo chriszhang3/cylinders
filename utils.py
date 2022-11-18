@@ -4,9 +4,7 @@ def find_generic_pants(cyl_diag):
     """Finds cases when n cylinders are all complete attached to the side of a
     single cylinder.
     
-    Input: A digraph representation of cylinder adjacencies of a horizontally
-    periodic translation surface. The surface should have more than one
-    cylinder.
+    Input: A cylinder diagram.
     
     Output: A list of lists repsenting homology restrictions."""
     cylinders = cyl_diag.cylinders()
