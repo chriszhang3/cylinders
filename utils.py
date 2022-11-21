@@ -1,10 +1,12 @@
+from collections import defaultdict
 import unittest
 import networkx as nx
+from surface_dynamics import CylinderDiagram
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from surface_dynamics import AbelianStratum
-from sage.combinat.partition import Partitions
-from sage.combinat.set_partition import SetPartitions
+from sage.all import Partitions, SetPartitions, QQ, matrix, vector
 
+# TODO: Add unittests for this
 def find_generic_pants(cyl_diag):
     """Finds cases when n cylinders are all complete attached to the side of a
     single cylinder.
@@ -77,13 +79,57 @@ def partitions(n, m, singletons=True):
         partitions.extend(SetPartitions(range(n), up))
     return partitions
 
-def valid_cylinder_equivalence_classes(cyl_diag, num_classes, free_cylinders = True):
-    """Cylinders are numbered. An edge is draw if the cylinders are connected."""
+def valid_equivalence_classes(cyl_diag, num_classes, free_cylinders = True):
+    """Returns cylinder equivalence classes that satisfy constraints
+    coming from generic pants."""
     cylinders = cyl_diag.cylinders()   
     relations = find_generic_pants(cyl_diag)
     part = partitions(len(cylinders), num_classes, free_cylinders)
     part = [p for p in part if check_conditions(p, relations)]
     return part
+
+def find_homologous_cylinders(cyl_diag):
+    cylinders = cyl_diag.cylinders()
+    equations = {}
+    relations = []
+    homologous_cylinders_partition = defaultdict(list)
+
+    # Convert cylinders into relations.
+    for bot, top in cylinders:
+        row = [0] * cyl_diag.degree()
+        for s in bot:
+            row[s] += 1
+        for s in top:
+            row[s] -= 1
+        relations.append(row)
+    relations = matrix(QQ, relations)
+
+    # Convert relations into a matrix in reduced row echelon form.
+    # Add these relations to `equaitons`.
+    for row in relations.rref():
+        for i, one in enumerate(row):
+            if one == 1:
+                row[i] = 0
+                for j in range(len(row)):
+                    row[j] = -row[j]
+                equations[i] = row
+                break
+    
+    for i, (bot, _) in enumerate(cylinders):
+        vec = vector(QQ, [0] * cyl_diag.degree())
+        for s in bot:
+            vec[s] += 1
+        # print(vec)
+        for n in equations:
+            if vec[n] == 1:
+                vec[n] = 0
+                vec = vec + equations[n]
+        homologous_cylinders_partition[tuple(vec)].append(i)
+    output = []
+    for v in homologous_cylinders_partition.values():
+        if len(v) > 1:
+            output.append(v)
+    return output
 
 class Test(unittest.TestCase):
 
@@ -100,16 +146,25 @@ class Test(unittest.TestCase):
     def test_valid(self):
         C = CylinderDiagrams()
         H = AbelianStratum(3, 1).components()[0]
-        valid_classes = [cd for cd in C.get_iterator(H, 4) if valid_cylinder_equivalence_classes(cd, 2, False)]
+        valid_classes = [cd for cd in C.get_iterator(H, 4)
+                         if valid_equivalence_classes(cd, 2, False)]
         self.assertFalse(valid_classes)
 
         H = AbelianStratum(2, 2).components()[1]
-        valid_classes = [cd for cd in C.get_iterator(H, 4) if valid_cylinder_equivalence_classes(cd, 2, False)]
+        valid_classes = [cd for cd in C.get_iterator(H, 4)
+                         if valid_equivalence_classes(cd, 2, False)]
         self.assertEqual(len(valid_classes), 4)
 
         H = AbelianStratum(2, 1, 1).components()[0]
-        valid_classes = [cd for cd in C.get_iterator(H, 4) if valid_cylinder_equivalence_classes(cd, 2, False)]
+        valid_classes = [cd for cd in C.get_iterator(H, 4)
+                         if valid_equivalence_classes(cd, 2, False)]
         self.assertEqual(len(valid_classes), 9)
+    
+    def test_find_homologous_cylinders(self):
+        cd = CylinderDiagram('(0,2,1)-(4,5) (3,5)-(0,2,1) (4)-(3)')
+        cd2 = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
+        self.assertEqual(find_homologous_cylinders(cd)[0], [0, 1])
+        self.assertEqual(find_homologous_cylinders(cd2)[0], [2, 3])
 
 if __name__ == "__main__":
     unittest.main()
