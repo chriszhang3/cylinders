@@ -82,11 +82,14 @@ def partitions(n, m, singletons=True):
 def valid_equivalence_classes(cyl_diag, num_classes, free_cylinders = True):
     """Returns cylinder equivalence classes that satisfy constraints
     coming from generic pants."""
-    cylinders = cyl_diag.cylinders()   
+    output = []
+    cylinders = cyl_diag.cylinders()
     relations = find_generic_pants(cyl_diag)
-    part = partitions(len(cylinders), num_classes, free_cylinders)
-    part = [p for p in part if check_conditions(p, relations)]
-    return part
+    for n in num_classes:
+        part = partitions(len(cylinders), n, free_cylinders)
+        part = [p for p in part if check_conditions(p, relations)]
+        output.extend(part)
+    return output
 
 def find_homologous_cylinders(cyl_diag):
     cylinders = cyl_diag.cylinders()
