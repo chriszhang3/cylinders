@@ -4,7 +4,7 @@ import networkx as nx
 from surface_dynamics import CylinderDiagram
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from surface_dynamics import AbelianStratum
-from sage.all import Partitions, SetPartitions, QQ, matrix, vector
+from sage.all import Partitions, SetPartitions, QQ, matrix, vector, span
 
 # TODO: Add unittests for this
 def find_generic_pants(cyl_diag):
@@ -141,6 +141,68 @@ def find_homologous_cylinders(cyl_diag):
             output.append(v)
     return output
 
+class Twist:
+    """A class useful for computing the twist space of a translation surface"""
+    def __init__(self, cd):
+        self.cd = cd
+        cylinders = cd.cylinders()
+        equations = {}
+        relations = []
+        self.core_curves = []
+
+        for bot, top in cylinders:
+            row = [0] * cd.degree()
+            for s in bot:
+                row[s] += 1
+            for s in top:
+                row[s] -= 1
+            relations.append(row)
+        relations = matrix(QQ, relations)
+        self.relations = relations
+
+        for row in relations.rref():
+            for i, one in enumerate(row):
+                if one == 1:
+                    row[i] = 0
+                    for j in range(len(row)):
+                        row[j] = -row[j]
+                    equations[i] = row
+                    break
+
+        for i, (bot, _) in enumerate(cylinders):
+            vec = vector(QQ, [0] * cd.degree())
+            for s in bot:
+                vec[s] += 1
+            for n in equations:
+                if vec[n] == 1:
+                    vec[n] = 0
+                    vec = vec + equations[n]
+            self.core_curves.append(vec)
+
+def check_twist_rel(tw, upper_bound, part_list):
+    """Check dimension of p(Tw M)
+
+    Filters part_list retaining only those such that
+    * dim(p(Tw M)) < upper_bound *
+    
+    `tw` is a Twist object
+    `upper_bound` is the constant in the above equation
+    `part_list` is the list of partitions to be checked
+    returns a sublist of part_list with unwanted ones removed
+    """
+    good_part = []
+    for partition in part_list:
+        twist_space_vectors = []
+        for cyl_class in partition:
+            induced_twist = vector(QQ, [0] * tw.cd.degree())
+            for cyl in cyl_class:
+                induced_twist += tw.core_curves[cyl]
+            twist_space_vectors.append(induced_twist)
+        V = span(twist_space_vectors, QQ)
+        if V.dimension() < upper_bound:
+            good_part.append(partition)
+    return good_part
+
 class Test(unittest.TestCase):
 
     def test_check_conditions(self):
@@ -153,7 +215,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(partitions(6, 2, singletons=False)), 25)
         self.assertEqual(len(partitions(6, 3, singletons=False)), 15)
     
-    def test_valid(self):
+    def test_pants_relations(self):
         C = CylinderDiagrams()
         H = AbelianStratum(3, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
@@ -175,6 +237,13 @@ class Test(unittest.TestCase):
         cd2 = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
         self.assertEqual(find_homologous_cylinders(cd)[0], [0, 1])
         self.assertEqual(find_homologous_cylinders(cd2)[0], [2, 3])
+    
+    def test_twist_rel(self):
+        cd = CylinderDiagram("(0)-(2) (1,2,3)-(4,5) (4)-(3) (5)-(0,1)")
+        tw = Twist(cd)
+        part = check_twist_rel(tw, 3, partitions(4, 3))
+        part = [set(p) for p in part]
+        self.assertEqual(part, [set([frozenset([0]), frozenset([1]), frozenset([2, 3])])])
 
 if __name__ == "__main__":
     unittest.main()
