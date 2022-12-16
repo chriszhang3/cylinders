@@ -64,7 +64,7 @@ def check_conditions(partition, condition_list):
             return False
     return True
 
-def partitions(n, m, singletons=True):
+def list_partitions(n, m, singletons=True):
     """List all ways to partition the set [1..n] into m sets.
     
     If singletons==False, do not allow singleton sets."""
@@ -210,26 +210,26 @@ class Test(unittest.TestCase):
         self.assertFalse(check_conditions([{0, 1}, {2, 3}], [[1, 2, 3]]))
     
     def test_partitions(self):
-        self.assertEqual(len(partitions(5, 2, singletons=False)), 10)
-        self.assertEqual(len(partitions(5, 2, singletons=True)), 15)
-        self.assertEqual(len(partitions(6, 2, singletons=False)), 25)
-        self.assertEqual(len(partitions(6, 3, singletons=False)), 15)
+        self.assertEqual(len(list_partitions(5, 2, singletons=False)), 10)
+        self.assertEqual(len(list_partitions(5, 2, singletons=True)), 15)
+        self.assertEqual(len(list_partitions(6, 2, singletons=False)), 25)
+        self.assertEqual(len(list_partitions(6, 3, singletons=False)), 15)
     
     def test_pants_relations(self):
         C = CylinderDiagrams()
         H = AbelianStratum(3, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if check_pants_relations(cd, partitions(4, 2, False))]
+                         if check_pants_relations(cd, list_partitions(4, 2, False))]
         self.assertFalse(valid_classes)
 
         H = AbelianStratum(2, 2).components()[1]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if check_pants_relations(cd, partitions(4, 2, False))]
+                         if check_pants_relations(cd, list_partitions(4, 2, False))]
         self.assertEqual(len(valid_classes), 4)
 
         H = AbelianStratum(2, 1, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if check_pants_relations(cd, partitions(4, 2, False))]
+                         if check_pants_relations(cd, list_partitions(4, 2, False))]
         self.assertEqual(len(valid_classes), 9)
     
     def test_find_homologous_cylinders(self):
@@ -241,9 +241,16 @@ class Test(unittest.TestCase):
     def test_twist_rel(self):
         cd = CylinderDiagram("(0)-(2) (1,2,3)-(4,5) (4)-(3) (5)-(0,1)")
         tw = Twist(cd)
-        part = check_twist_rel(tw, 3, partitions(4, 3))
+        part = check_twist_rel(tw, 3, list_partitions(4, 3))
         part = [set(p) for p in part]
         self.assertEqual(part, [set([frozenset([0]), frozenset([1]), frozenset([2, 3])])])
+
+        cd = CylinderDiagram("(0,3)-(5) (1)-(0) (2,5)-(3,4) (4)-(1,2)")
+        tw = Twist(cd)
+        part = check_twist_rel(tw, 3, list_partitions(4, 3))
+        part = {frozenset(p) for p in part}
+        answer = set([frozenset([frozenset([1]), frozenset([2]), frozenset([0, 3])]), frozenset([frozenset([0]), frozenset([3]), frozenset([1, 2])])])
+        self.assertEqual(part, answer)
 
 if __name__ == "__main__":
     unittest.main()
