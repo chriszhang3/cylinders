@@ -79,16 +79,17 @@ def partitions(n, m, singletons=True):
         partitions.extend(SetPartitions(range(n), up))
     return partitions
 
-def valid_equivalence_classes(cyl_diag, num_classes, free_cylinders = True):
+def valid_equivalence_classes(cyl_diag, part):
     """Returns cylinder equivalence classes that satisfy constraints
-    coming from generic pants."""
+    coming from generic pants.
+    
+    `cyl_diag` is a cylinder diagram
+    `part` is a list of partitions to filter through
+    """
     output = []
-    cylinders = cyl_diag.cylinders()
     relations = find_generic_pants(cyl_diag)
-    for n in num_classes:
-        part = partitions(len(cylinders), n, free_cylinders)
-        part = [p for p in part if check_conditions(p, relations)]
-        output.extend(part)
+    part = [p for p in part if check_conditions(p, relations)]
+    output.extend(part)
     return output
 
 def find_homologous_cylinders(cyl_diag):
@@ -108,7 +109,7 @@ def find_homologous_cylinders(cyl_diag):
     relations = matrix(QQ, relations)
 
     # Convert relations into a matrix in reduced row echelon form.
-    # Add these relations to `equaitons`.
+    # Add these relations to `equations`.
     for row in relations.rref():
         for i, one in enumerate(row):
             if one == 1:
@@ -150,17 +151,17 @@ class Test(unittest.TestCase):
         C = CylinderDiagrams()
         H = AbelianStratum(3, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if valid_equivalence_classes(cd, 2, False)]
+                         if valid_equivalence_classes(cd, partitions(4, 2, False))]
         self.assertFalse(valid_classes)
 
         H = AbelianStratum(2, 2).components()[1]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if valid_equivalence_classes(cd, 2, False)]
+                         if valid_equivalence_classes(cd, partitions(4, 2, False))]
         self.assertEqual(len(valid_classes), 4)
 
         H = AbelianStratum(2, 1, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if valid_equivalence_classes(cd, 2, False)]
+                         if valid_equivalence_classes(cd, partitions(4, 2, False))]
         self.assertEqual(len(valid_classes), 9)
     
     def test_find_homologous_cylinders(self):
