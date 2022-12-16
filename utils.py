@@ -79,12 +79,13 @@ def partitions(n, m, singletons=True):
         partitions.extend(SetPartitions(range(n), up))
     return partitions
 
-def valid_equivalence_classes(cyl_diag, part):
-    """Returns cylinder equivalence classes that satisfy constraints
+def check_pants_relations(cyl_diag, part):
+    """Remove cylinder equivalence classes that don't satisfy constraints
     coming from generic pants.
     
     `cyl_diag` is a cylinder diagram
     `part` is a list of partitions to filter through
+    returns a sublist  of `part` with unwanted ones removed
     """
     output = []
     relations = find_generic_pants(cyl_diag)
@@ -93,6 +94,11 @@ def valid_equivalence_classes(cyl_diag, part):
     return output
 
 def find_homologous_cylinders(cyl_diag):
+    """Find any pairs of homologous cylinders.
+
+    `cyl_diag` is a cylinder diagram.
+    returns a list of lists of homologous cylinders
+    """
     cylinders = cyl_diag.cylinders()
     equations = {}
     relations = []
@@ -151,17 +157,17 @@ class Test(unittest.TestCase):
         C = CylinderDiagrams()
         H = AbelianStratum(3, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if valid_equivalence_classes(cd, partitions(4, 2, False))]
+                         if check_pants_relations(cd, partitions(4, 2, False))]
         self.assertFalse(valid_classes)
 
         H = AbelianStratum(2, 2).components()[1]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if valid_equivalence_classes(cd, partitions(4, 2, False))]
+                         if check_pants_relations(cd, partitions(4, 2, False))]
         self.assertEqual(len(valid_classes), 4)
 
         H = AbelianStratum(2, 1, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if valid_equivalence_classes(cd, partitions(4, 2, False))]
+                         if check_pants_relations(cd, partitions(4, 2, False))]
         self.assertEqual(len(valid_classes), 9)
     
     def test_find_homologous_cylinders(self):
