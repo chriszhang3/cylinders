@@ -87,11 +87,9 @@ def check_pants_relations(cyl_diag, part):
     `part` is a list of partitions to filter through
     returns a sublist  of `part` with unwanted ones removed
     """
-    output = []
     relations = find_generic_pants(cyl_diag)
     part = [p for p in part if check_conditions(p, relations)]
-    output.extend(part)
-    return output
+    return part
 
 def find_homologous_cylinders(cyl_diag):
     """Find any pairs of homologous cylinders.
@@ -140,6 +138,21 @@ def find_homologous_cylinders(cyl_diag):
         if len(v) > 1:
             output.append(v)
     return output
+
+def check_homologous_cylinders(cyl_diag, part):
+    """Filter cylinder partitions ensuring homologous cylinders are in the same 
+    M-parallel class. Uses homology classes from `find_homologous cylinders`"""
+    classes = find_homologous_cylinders(cyl_diag)
+    def check(p):
+        for homology_class in classes:
+            homology_class = frozenset(homology_class)
+            for f_set in p:
+                intersection = f_set.intersection(homology_class)
+                if intersection != frozenset() and intersection != homology_class:
+                    return False
+        return True
+    part = [p for p in part if check(p)]
+    return part
 
 class Twist:
     """A class useful for computing the twist space of a translation surface"""
