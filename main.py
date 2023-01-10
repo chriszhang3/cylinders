@@ -9,13 +9,17 @@ def main():
     strata.append(AbelianStratum(2, 2).components()[1])
     for H in strata:
         for cd in C.get_iterator(H, 4):
-            part = list_partitions(4, 3)
-            part = check_pants_relations(cd, part)
-            part = check_twist_rel(Twist(cd), 3, part)
-            part = check_homologous_cylinders(cd, part)
+            part3 = list_partitions(4, 3)
+            part3 = check_pants_relations(cd, part3)
+            part3 = check_twist_rel(Twist(cd), 3, part3)
+            part3 = check_homologous_cylinders(cd, part3)
+            part2 = list_partitions(4, 2)
+            part2 = check_pants_relations(cd, part2)
+            part2 = check_twist_rel(Twist(cd), 3, part2)
+            part2 = check_homologous_cylinders(cd, part2)
             print(cd)
-            if part:
-                print(part)
+            if part2 or part3:
+                print(part2 + part3)
 
 if __name__ == '__main__':
     main()
