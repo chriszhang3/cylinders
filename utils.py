@@ -6,6 +6,37 @@ from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from surface_dynamics import AbelianStratum
 from sage.all import Partitions, SetPartitions, QQ, matrix, vector, span
 
+def contains_pants(cyl_diag):
+    """
+    Input: A cylinder diagram.
+    
+    Output: True if cylinder diagram contains a 3-cylinder pair of pants.
+    """
+    cylinders = cyl_diag.cylinders()
+    digraph_data = [[None, None] for _ in range(cyl_diag.degree())]
+    for i, (bot, top) in enumerate(cyl_diag.cylinders()):
+        for separatrix in bot:
+            digraph_data[separatrix][0] = i
+        for separatrix in top:
+            digraph_data[separatrix][1] = i
+
+    digraph = nx.DiGraph()
+    digraph.add_nodes_from(range(len(cylinders)))
+    for source, dest in digraph_data:
+        digraph.add_edge(source, dest)
+
+    for n in digraph:
+        successors = list(digraph.successors(n))
+        if len(successors) == 2 and \
+        all([list(digraph.predecessors(suc)) == [n] for suc in successors]):
+            return True
+
+        predecessors = list(digraph.predecessors(n))
+        if len(predecessors) == 2 and \
+        all([list(digraph.successors(pre)) == [n] for pre in predecessors]):
+            return True
+    return False
+
 # TODO: Add unittests for this
 def find_generic_pants(cyl_diag):
     """Finds cases when n cylinders are all complete attached to the side of a
