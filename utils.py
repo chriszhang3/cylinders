@@ -4,7 +4,8 @@ import networkx as nx
 from surface_dynamics import CylinderDiagram
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from surface_dynamics import AbelianStratum
-from sage.all import Partitions, SetPartitions, QQ, matrix, vector, span
+from sage.all import Partitions, SetPartitions, QQ, matrix, vector
+from Twist import Twist
 
 def contains_pants(cyl_diag):
     """
@@ -169,7 +170,6 @@ def find_homologous_cylinders(cyl_diag):
             output.append(v)
     return output
 
-# TODO: write unittests
 def check_homologous_condition(cyl_diag, partition):
     """Check that homologous cylinders are in the same M-parallel class."""
     classes = find_homologous_cylinders(cyl_diag)
@@ -185,6 +185,9 @@ def filter_homologous_condition(cyl_diag, part_list):
     return [part for part in part_list 
                  if check_homologous_condition(cyl_diag, part)]
 
+def filter_twist_condition(tw, upper_bound, part_list):
+    return [part for part in part_list 
+                 if tw.check_twist_condition(upper_bound, part)]
 
 class Test(unittest.TestCase):
 
@@ -221,7 +224,30 @@ class Test(unittest.TestCase):
         self.assertEqual(find_homologous_cylinders(cd)[0], [0, 1])
         self.assertEqual(find_homologous_cylinders(cd2)[0], [2, 3])
     
+    def test_filter_homologous_cylinders(self):
+        part_list = list_partitions(3, 2)
+        cd = CylinderDiagram('(0,2,1)-(4,5) (3,5)-(0,2,1) (4)-(3)')
+        good_part = filter_homologous_condition(cd, part_list)
+        self.assertEqual(len(good_part), 1)
+        part_list = list_partitions(4, 2)
+        cd = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
+        good_part = filter_homologous_condition(cd, part_list)
+        self.assertEqual(len(good_part), 3)
     
+    def test_twist_rel(self):
+        cd = CylinderDiagram("(0)-(2) (1,2,3)-(4,5) (4)-(3) (5)-(0,1)")
+        tw = Twist(cd)
+        part = filter_twist_condition(tw, 3, list_partitions(4, 3))
+        part = [set(p) for p in part]
+        self.assertEqual(part, [set([frozenset([0]), frozenset([1]), frozenset([2, 3])])])
+
+        cd = CylinderDiagram("(0,3)-(5) (1)-(0) (2,5)-(3,4) (4)-(1,2)")
+        tw = Twist(cd)
+        part = filter_twist_condition(tw, 3, list_partitions(4, 3))
+        part = {frozenset(p) for p in part}
+        answer = set([frozenset([frozenset([1]), frozenset([2]), frozenset([0, 3])]), frozenset([frozenset([0]), frozenset([3]), frozenset([1, 2])])])
+        self.assertEqual(part, answer)
+
 
 if __name__ == "__main__":
     unittest.main()

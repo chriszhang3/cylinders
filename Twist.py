@@ -1,7 +1,4 @@
-import unittest
 from sage.all import QQ, matrix, vector, span
-from surface_dynamics import CylinderDiagram
-from utils import list_partitions
 
 class Twist:
     """A class useful for computing the twist space of a translation surface
@@ -76,22 +73,3 @@ class Twist:
         if V.dimension() < upper_bound:
             return True
         return False
-
-def filter_twist_condition(tw, upper_bound, part_list):
-    return [part for part in part_list 
-                 if tw.check_twist_condition(upper_bound, part)]
-
-class Test(unittest.TestCase):
-    def test_twist_rel(self):
-        cd = CylinderDiagram("(0)-(2) (1,2,3)-(4,5) (4)-(3) (5)-(0,1)")
-        tw = Twist(cd)
-        part = filter_twist_condition(tw, 3, list_partitions(4, 3))
-        part = [set(p) for p in part]
-        self.assertEqual(part, [set([frozenset([0]), frozenset([1]), frozenset([2, 3])])])
-
-        cd = CylinderDiagram("(0,3)-(5) (1)-(0) (2,5)-(3,4) (4)-(1,2)")
-        tw = Twist(cd)
-        part = filter_twist_condition(tw, 3, list_partitions(4, 3))
-        part = {frozenset(p) for p in part}
-        answer = set([frozenset([frozenset([1]), frozenset([2]), frozenset([0, 3])]), frozenset([frozenset([0]), frozenset([3]), frozenset([1, 2])])])
-        self.assertEqual(part, answer)
