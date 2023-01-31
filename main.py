@@ -34,7 +34,7 @@ def check_cylinder_diagrams_in_stratam(H, num_cylinders, check_for_pants=False):
 
 def main():
     H = AbelianStratum(2, 1, 1).components()[0]
-    check_cylinder_diagrams_in_stratam(H, 4, True)
+    check_cylinder_diagrams_in_stratam(H, 4, False)
 
 if __name__ == '__main__':
     main()
