@@ -95,7 +95,7 @@ def list_partitions(n, m, singletons=True):
         partitions.extend(SetPartitions(range(n), up))
     return partitions
 
-def check_pants_conditions(partition, condition_list):
+def check_pants_condition(partition, condition_list):
     """Check the partition satisfies a property.
     
     condition is a list of integers. 
@@ -111,7 +111,7 @@ def check_pants_conditions(partition, condition_list):
             return False
     return True
 
-def filter_pants_relations(cyl_diag, part_list):
+def filter_pants_condition(cyl_diag, part_list):
     """Remove cylinder equivalence classes that don't satisfy constraints
     coming from generic pants.
     
@@ -120,7 +120,7 @@ def filter_pants_relations(cyl_diag, part_list):
     returns a sublist  of `part` with unwanted ones removed
     """
     relations = find_generic_pants(cyl_diag)
-    return [p for p in part_list if check_pants_conditions(p, relations)]
+    return [p for p in part_list if check_pants_condition(p, relations)]
 
 def find_homologous_cylinders(cyl_diag):
     """Find any pairs of homologous cylinders.
@@ -191,9 +191,9 @@ def filter_twist_condition(tw, upper_bound, part_list):
 
 class Test(unittest.TestCase):
 
-    def test_check_pants_conditions(self):
-        self.assertTrue(check_pants_conditions([{1}, {2}, {3}], [[1, 2, 3]]))
-        self.assertFalse(check_pants_conditions([{0, 1}, {2, 3}], [[1, 2, 3]]))
+    def test_check_pants_condition(self):
+        self.assertTrue(check_pants_condition([{1}, {2}, {3}], [[1, 2, 3]]))
+        self.assertFalse(check_pants_condition([{0, 1}, {2, 3}], [[1, 2, 3]]))
     
     def test_partitions(self):
         self.assertEqual(len(list_partitions(5, 2, singletons=False)), 10)
@@ -205,17 +205,17 @@ class Test(unittest.TestCase):
         C = CylinderDiagrams()
         H = AbelianStratum(3, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if filter_pants_relations(cd, list_partitions(4, 2, False))]
+                         if filter_pants_condition(cd, list_partitions(4, 2, False))]
         self.assertFalse(valid_classes)
 
         H = AbelianStratum(2, 2).components()[1]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if filter_pants_relations(cd, list_partitions(4, 2, False))]
+                         if filter_pants_condition(cd, list_partitions(4, 2, False))]
         self.assertEqual(len(valid_classes), 4)
 
         H = AbelianStratum(2, 1, 1).components()[0]
         valid_classes = [cd for cd in C.get_iterator(H, 4)
-                         if filter_pants_relations(cd, list_partitions(4, 2, False))]
+                         if filter_pants_condition(cd, list_partitions(4, 2, False))]
         self.assertEqual(len(valid_classes), 9)
     
     def test_find_homologous_cylinders(self):
