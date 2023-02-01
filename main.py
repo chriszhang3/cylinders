@@ -1,6 +1,6 @@
 from surface_dynamics import AbelianStratum
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
-from utils import check_pants_relations, check_twist_rel, list_partitions, Twist, check_homologous_cylinders, contains_pants
+from utils import list_partitions, Twist, contains_pants, filter_homologous_condition, filter_pants_condition
 
 def find_valid_partitions(cyl_diag_list, num_cylinders, num_classes, check_for_pants):
     output = {}
@@ -8,9 +8,8 @@ def find_valid_partitions(cyl_diag_list, num_cylinders, num_classes, check_for_p
         if check_for_pants and contains_pants(cd):
             continue
         part = list_partitions(num_cylinders, num_classes)
-        part = check_pants_relations(cd, part)
-        part = check_twist_rel(Twist(cd), 3, part)
-        part = check_homologous_cylinders(cd, part)
+        part = filter_pants_condition(cd, part)
+        part = filter_homologous_condition(cd, part)
         output[cd] = part
     return output
 
@@ -33,7 +32,10 @@ def check_cylinder_diagrams_in_stratam(H, num_cylinders, check_for_pants=False):
             print(v)
 
 def main():
-    H = AbelianStratum(2, 1, 1).components()[0]
+    # H = AbelianStratum(3, 1).components()[0]
+    H = AbelianStratum(2, 2).components()[1]
+    
+    # H = AbelianStratum(2, 1, 1).components()[0]
     check_cylinder_diagrams_in_stratam(H, 4, False)
 
 if __name__ == '__main__':

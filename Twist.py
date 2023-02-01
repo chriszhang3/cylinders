@@ -54,10 +54,10 @@ class Twist:
                     vec = vec + equations[n]
             self.core_curves.append(vec)
     
-    def check_twist_condition(self, upper_bound, partition):
+    def check_twist_condition(self, rank, partition):
         """Check dimension of p(Tw M)
 
-        Checks whether M satisfies: dim(p(Tw M)) < upper_bound
+        Checks whether M satisfies: dim(p(Tw M)) < 2*rank
         
         `upper_bound` is the constant in the above equation
         `partition` is a partition of the cylinders of self.cd into cylinder
@@ -70,6 +70,6 @@ class Twist:
                 induced_twist += self.core_curves[cyl]
             twist_space_vectors.append(induced_twist)
         V = span(twist_space_vectors, QQ)
-        if V.dimension() < upper_bound:
+        if V.dimension() == rank:
             return True
         return False
