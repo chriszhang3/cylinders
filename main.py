@@ -32,11 +32,13 @@ def check_cylinder_diagrams_in_stratam(H, num_cylinders, check_for_pants=False):
             print(v)
 
 def main():
-    # H = AbelianStratum(3, 1).components()[0]
-    H = AbelianStratum(2, 2).components()[1]
-    
+    H = AbelianStratum(3, 1).components()[0]
+    # H = AbelianStratum(2, 2).components()[1]
+    C = CylinderDiagrams()
+    for cd in C.get_iterator(H, 4):
+        print("\t\item", cd)
     # H = AbelianStratum(2, 1, 1).components()[0]
-    check_cylinder_diagrams_in_stratam(H, 4, False)
+    # check_cylinder_diagrams_in_stratam(H, 4, False)
 
 if __name__ == '__main__':
     main()
