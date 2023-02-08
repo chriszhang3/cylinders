@@ -125,6 +125,17 @@ def filter_homologous_condition(cyl_diag, part_list):
     return [part for part in part_list 
                  if check_homologous_condition(cyl_diag, part)]
 
+def check_leaf_condition(cd, partition):
+    cylinder_graph = CylinderGraph(cd)
+    for leaf, neighbor in cylinder_graph.find_leaves():
+        if find_element_in_partition(partition, leaf) == \
+           find_element_in_partition(partition, neighbor):
+            return False
+    return True
+
+def filter_leaf_condition(cd, part_list):
+    return [part for part in part_list if check_leaf_condition(cd, part)]
+
 class Test(unittest.TestCase):
 
     def test_check_pants_condition(self):
@@ -169,6 +180,12 @@ class Test(unittest.TestCase):
         cd = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
         good_part = filter_homologous_condition(cd, part_list)
         self.assertEqual(len(good_part), 3)
+
+    def test_filter_leaf_condition(self):
+        part_list = list_partitions(4, 2)
+        cd = CylinderDiagram("(0,1)-(0,2) (2)-(3) (3,4)-(1,5) (5)-(4)")
+        good_part = filter_leaf_condition(cd, part_list)
+        self.assertEqual(len(good_part), 4)
 
 if __name__ == "__main__":
     unittest.main()

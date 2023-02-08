@@ -60,15 +60,17 @@ class CylinderGraph:
         return pants_list
     
     def find_leaves(self):
-        """Return the leaves of self.digraph.
+        """Return the tuples (leaf, neighbor) for all leaves of self.digraph.
         
         A leaf is a vertex such that it only has one neighbor, where we 
         count a vertex as a neighbor if there is either an edge coming from it
-        or an edge going to it."""
-        leaves = []
+        or an edge going to it.
+        
+        For a given leaf, `neighbor` is it's unique neighbor."""
+        leaf_neighbers = []
         for n in self.digraph:
             neighbors = set(self.digraph.successors(n)) | \
                         set(self.digraph.predecessors(n))
             if len(neighbors) == 1:
-                leaves.append(n)
-        return leaves
+                leaf_neighbers.append((n, list(neighbors)[0]))
+        return leaf_neighbers
