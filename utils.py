@@ -1,78 +1,10 @@
 from collections import defaultdict
 import unittest
-import networkx as nx
 from surface_dynamics import CylinderDiagram
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from surface_dynamics import AbelianStratum
 from sage.all import Partitions, SetPartitions, QQ, matrix, vector
-from Twist import Twist
-
-def contains_pants(cyl_diag):
-    """
-    Input: A cylinder diagram.
-    
-    Output: True if cylinder diagram contains a 3-cylinder pair of pants.
-    """
-    cylinders = cyl_diag.cylinders()
-    digraph_data = [[None, None] for _ in range(cyl_diag.degree())]
-    for i, (bot, top) in enumerate(cyl_diag.cylinders()):
-        for separatrix in bot:
-            digraph_data[separatrix][0] = i
-        for separatrix in top:
-            digraph_data[separatrix][1] = i
-
-    digraph = nx.DiGraph()
-    digraph.add_nodes_from(range(len(cylinders)))
-    for source, dest in digraph_data:
-        digraph.add_edge(source, dest)
-
-    for n in digraph:
-        successors = list(digraph.successors(n))
-        if len(successors) == 2 and \
-        all([list(digraph.predecessors(suc)) == [n] for suc in successors]):
-            return True
-
-        predecessors = list(digraph.predecessors(n))
-        if len(predecessors) == 2 and \
-        all([list(digraph.successors(pre)) == [n] for pre in predecessors]):
-            return True
-    return False
-
-# TODO: Add unittests for this
-def find_generic_pants(cyl_diag):
-    """Finds cases when n cylinders are all complete attached to the side of a
-    single cylinder.
-    
-    Input: A cylinder diagram.
-    
-    Output: A list of lists repsenting homology restrictions."""
-    cylinders = cyl_diag.cylinders()
-    digraph_data = [[None, None] for _ in range(cyl_diag.degree())]
-    for i, (bot, top) in enumerate(cyl_diag.cylinders()):
-        for separatrix in bot:
-            digraph_data[separatrix][0] = i
-        for separatrix in top:
-            digraph_data[separatrix][1] = i
-
-    digraph = nx.DiGraph()
-    digraph.add_nodes_from(range(len(cylinders)))
-    for source, dest in digraph_data:
-        digraph.add_edge(source, dest)
-
-    output = []
-    for n in digraph:
-        successors = list(digraph.successors(n))
-        if all([list(digraph.predecessors(suc)) == [n] for suc in successors]):
-            successors.append(n)
-            output.append(successors)
-
-        predecessors = list(digraph.predecessors(n))
-        if all([list(digraph.successors(pre)) == [n] for pre in predecessors]):
-            predecessors.append(n)
-            # check if this relation already exists
-            if not set(successors) == set(predecessors):
-                output.append(predecessors)
-    return output
+from Graph import CylinderGraph
 
 def find_element_in_partition(partition, element):
     """Gives the singularity corresponding to the right vertex of the saddle."""
@@ -95,14 +27,20 @@ def list_partitions(n, m, singletons=True):
         partitions.extend(SetPartitions(range(n), up))
     return partitions
 
-def check_pants_condition(partition, condition_list):
-    """Check the partition satisfies a property.
+def check_pants_condition(partition, pants_list):
+    """Check the partition satisfies any homology restrictions coming from 
+    the pants in pants_list.
     
-    condition is a list of integers. 
-    Either one set must contain all integers in the list, or they must be split
-    among at least 3 of the sets.
+    `partition` is a partition of the cylinders of horizontally periodic
+    translation surface into M-parallel classes.
+
+    `pants_list` is a list of pants, where each pants is a frozenset containing
+    every cylinder in the pants
+    
+    The cylinders in the pants cannot be contained in exactly two distinct
+    sets in `partition`.
     """
-    for condition in condition_list:
+    for condition in pants_list:
         partition_sets = map(
             lambda c: find_element_in_partition(partition, c),
             condition
@@ -119,8 +57,10 @@ def filter_pants_condition(cyl_diag, part_list):
     `part` is a list of partitions to filter through
     returns a sublist  of `part` with unwanted ones removed
     """
-    relations = find_generic_pants(cyl_diag)
-    return [p for p in part_list if check_pants_condition(p, relations)]
+    cyl_graph = CylinderGraph(cyl_diag)
+    pants_list = cyl_graph.find_generic_pants()
+    return [partition for partition in part_list 
+                      if check_pants_condition(partition, pants_list)]
 
 def find_homologous_cylinders(cyl_diag):
     """Find any pairs of homologous cylinders.
@@ -185,10 +125,6 @@ def filter_homologous_condition(cyl_diag, part_list):
     return [part for part in part_list 
                  if check_homologous_condition(cyl_diag, part)]
 
-def filter_twist_condition(tw, upper_bound, part_list):
-    return [part for part in part_list 
-                 if tw.check_twist_condition(upper_bound, part)]
-
 class Test(unittest.TestCase):
 
     def test_check_pants_condition(self):
@@ -233,21 +169,6 @@ class Test(unittest.TestCase):
         cd = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
         good_part = filter_homologous_condition(cd, part_list)
         self.assertEqual(len(good_part), 3)
-    
-    def test_twist_rel(self):
-        cd = CylinderDiagram("(0)-(2) (1,2,3)-(4,5) (4)-(3) (5)-(0,1)")
-        tw = Twist(cd)
-        part = filter_twist_condition(tw, 3, list_partitions(4, 3))
-        part = [set(p) for p in part]
-        self.assertEqual(part, [set([frozenset([0]), frozenset([1]), frozenset([2, 3])])])
-
-        cd = CylinderDiagram("(0,3)-(5) (1)-(0) (2,5)-(3,4) (4)-(1,2)")
-        tw = Twist(cd)
-        part = filter_twist_condition(tw, 3, list_partitions(4, 3))
-        part = {frozenset(p) for p in part}
-        answer = set([frozenset([frozenset([1]), frozenset([2]), frozenset([0, 3])]), frozenset([frozenset([0]), frozenset([3]), frozenset([1, 2])])])
-        self.assertEqual(part, answer)
-
 
 if __name__ == "__main__":
     unittest.main()
