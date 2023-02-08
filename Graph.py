@@ -72,5 +72,5 @@ class CylinderGraph:
             neighbors = set(self.digraph.successors(n)) | \
                         set(self.digraph.predecessors(n))
             if len(neighbors) == 1:
-                leaf_neighbers.append((n, list(neighbors)[0]))
+                leaf_neighbers.append((n, next(iter(neighbors))))
         return leaf_neighbers
