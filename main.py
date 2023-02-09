@@ -32,7 +32,7 @@ def main():
     # H = AbelianStratum(3, 1).components()[0]
     # H = AbelianStratum(2, 2).components()[1]
     H = AbelianStratum(2, 1, 1).components()[0]
-    list_cylinder_classes(H, 5, 2)
+    list_cylinder_classes(H, 4, 2)
 
 if __name__ == '__main__':
     main()
