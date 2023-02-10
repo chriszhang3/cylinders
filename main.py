@@ -24,9 +24,8 @@ def list_cylinder_classes(H, num_cylinders, num_classes):
     cyl_diag_list = C.get_iterator(H, num_cylinders)
     valid = find_valid_partitions(cyl_diag_list, num_cylinders, num_classes)
     for k, v in valid.items():
-        if v:
-            print(k)
-            print(v)
+        print(k)
+        print(v)
 
 def main():
     # H = AbelianStratum(3, 1).components()[0]
