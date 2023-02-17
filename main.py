@@ -23,15 +23,15 @@ def list_cylinder_classes(H, num_cylinders, num_classes):
     C = CylinderDiagrams()
     cyl_diag_list = C.get_iterator(H, num_cylinders)
     valid = find_valid_partitions(cyl_diag_list, num_cylinders, num_classes)
-    for k, v in valid.items():
-        print(k)
+    for i, (k, v) in enumerate(valid.items()):
+        print(f"{i+1}. {k}")
         print(v)
 
 def main():
     # H = AbelianStratum(3, 1).components()[0]
-    # H = AbelianStratum(2, 2).components()[1]
-    H = AbelianStratum(2, 1, 1).components()[0]
-    list_cylinder_classes(H, 4, 2)
+    H = AbelianStratum(2, 2).components()[1]
+    # H = AbelianStratum(2, 1, 1).components()[0]
+    list_cylinder_classes(H, 4, 3)
 
 if __name__ == '__main__':
     main()
