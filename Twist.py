@@ -1,4 +1,5 @@
-from sage.all import QQ, matrix, vector, span
+from sage.all import QQ, matrix, vector
+
 
 class Twist:
     """A class useful for computing the twist space of a translation surface

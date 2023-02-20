@@ -1,2 +1,6 @@
+# cache files
 .ipynb_checkpoints/
 __pycache__
+
+# Not for production
+*.ipynb
