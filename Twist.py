@@ -1,3 +1,7 @@
+"""We can view H^1(M) as a quotient of H^1(M, Sigma). However, I have not found
+a good way to use this."""
+
+
 from sage.all import QQ, matrix, vector
 
 

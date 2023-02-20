@@ -1,6 +1,7 @@
 from surface_dynamics import AbelianStratum
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
-from lib import list_partitions, filter_homologous_condition, filter_pants_condition, filter_leaf_condition
+from lib import list_partitions, filter_homologous_condition, \
+                filter_pants_condition, filter_leaf_condition
 
 def find_valid_partitions(cyl_diag_list, num_cylinders, num_classes):
     output = {}
