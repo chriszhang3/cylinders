@@ -2,9 +2,11 @@ from sage.all import QQ, matrix, vector
 
 
 class Twist:
-    """A class useful for computing the twist space of a translation surface
+    """
+    A class useful for computing the twist space of a translation surface
     
-    input: `cd` which is a surface_dynamics.CylinderDiagram"""
+    input: `cd` which is a surface_dynamics.CylinderDiagram
+    """
     
     def __init__(self, cd):
         self.cd = cd
