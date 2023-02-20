@@ -17,7 +17,7 @@ Naming convention is as follows [H]-c[j]-all.txt, where
 *[H]* is the name of the component of stratum
 *[j]* is the number of cylinders in the diagram
 
-## Cylinder diagrams sorted by what homology relations they have
+## Cylinder diagrams sorted by homology relations
 
 Naming convention is as follows c-[j]-[relation].txt, where 
 
