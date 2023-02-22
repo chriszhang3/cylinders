@@ -30,7 +30,19 @@ class Test(unittest.TestCase):
     def test_check_pants_condition(self):
         self.assertTrue(check_pants_condition([{1}, {2}, {3}], [[1, 2, 3]]))
         self.assertFalse(check_pants_condition([{0, 1}, {2, 3}], [[1, 2, 3]]))
+        self.assertTrue(check_pants_condition([{0, 1, 2, 3}], [[1, 2, 3]]))
     
+    def test_filter_partition(self):
+        cd = CylinderDiagram("(0,3)-(5) (1)-(2) (2,5)-(3,4) (4)-(0,1)")
+        partitions = list_partitions(4, 2)
+        self.assertEqual(len(filter_pants_condition(cd, partitions)), 1)
+        cd = CylinderDiagram("(0,3)-(0,5) (1,2)-(1,4) (4)-(3) (5)-(2)")
+        partitions = list_partitions(4, 2)
+        self.assertEqual(len(filter_pants_condition(cd, partitions)), 7)
+        cd = CylinderDiagram("(0,2,1)-(3,4,5) (3)-(1) (4)-(2) (5)-(0)")
+        partitions = list_partitions(4, 2)
+        self.assertEqual(len(filter_pants_condition(cd, partitions)), 0)
+
     def test_partitions(self):
         self.assertEqual(len(list_partitions(5, 2, singletons=False)), 10)
         self.assertEqual(len(list_partitions(5, 2, singletons=True)), 15)

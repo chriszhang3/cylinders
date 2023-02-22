@@ -3,19 +3,6 @@ from sage.all import Partitions, SetPartitions, QQ, matrix, vector
 from Graph import CylinderGraph
 
 
-def find_cylinder_in_partition(partition, cylinder):
-    """Find the M-parallel class in `partition` than contains `cylinder`.
-    
-    `partition` is a list of frozen sets.
-    `cylinder` is an integer
-    Return the index of the element of `partition` that contains `cylinder`."""
-    for i, parallel_class in enumerate(partition):
-        if cylinder in parallel_class:
-            return i
-    
-    # If cylinder was not found in partition
-    return None
-
 def list_partitions(n, m, singletons=True):
     """Return a list of all ways to partition the set [1..n] into m sets.
     
@@ -38,6 +25,19 @@ def list_partitions(n, m, singletons=True):
     for each_part in int_parts:
         partitions.extend(SetPartitions(range(n), each_part))
     return partitions
+
+def find_cylinder_in_partition(partition, cylinder):
+    """Find the M-parallel class in `partition` than contains `cylinder`.
+    
+    `partition` is a list of frozen sets.
+    `cylinder` is an integer
+    Return the index of the element of `partition` that contains `cylinder`."""
+    for i, parallel_class in enumerate(partition):
+        if cylinder in parallel_class:
+            return i
+    
+    # If cylinder was not found in partition
+    return None
 
 def check_pants_condition(partition, pants_list):
     """Check the partition satisfies any homology conditions coming from 
