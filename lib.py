@@ -10,18 +10,26 @@ def find_element_in_partition(partition, element):
             return i
 
 def list_partitions(n, m, singletons=True):
-    """List all ways to partition the set [1..n] into m sets.
+    """Return a list of all ways to partition the set [1..n] into m sets.
     
-    If singletons==False, do not allow singleton sets."""
-    def contains_singleton(l):
-        return any([i == 1 for i in l])
+    If singletons==False, do not allow singleton sets.
+
+    Each element of each partition is a frozen set.
+    Each partition is an instance of
+    `sage.combinat.set_partition.SetPartitions_setparts_with_category.element_class`."""
 
     partitions = []
-    underlying_part = Partitions(n, length=m).list()
+
+    # Partition the integer n into m nonzero integers
+    int_parts = Partitions(n, length=m).list()
+
+    # Checks for singleton sets
     if not singletons:
-        underlying_part = [i for i in underlying_part if not contains_singleton(i)]
-    for up in underlying_part:
-        partitions.extend(SetPartitions(range(n), up))
+        int_parts = [l for l in int_parts if not any([i == 1 for i in l])]
+    
+    # Coverts integer partitions into set partitions
+    for each_part in int_parts:
+        partitions.extend(SetPartitions(range(n), each_part))
     return partitions
 
 def check_pants_condition(partition, pants_list):
@@ -37,6 +45,7 @@ def check_pants_condition(partition, pants_list):
     The cylinders in the pants cannot be contained in exactly two distinct
     sets in `partition`.
     """
+
     for condition in pants_list:
         partition_sets = map(
             lambda c: find_element_in_partition(partition, c),
