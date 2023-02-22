@@ -3,11 +3,18 @@ from sage.all import Partitions, SetPartitions, QQ, matrix, vector
 from Graph import CylinderGraph
 
 
-def find_element_in_partition(partition, element):
-    """Gives the singularity corresponding to the right vertex of the saddle."""
-    for i, part in enumerate(partition):
-        if element in part:
+def find_cylinder_in_partition(partition, cylinder):
+    """Find the M-parallel class in `partition` than contains `cylinder`.
+    
+    `partition` is a list of frozen sets.
+    `cylinder` is an integer
+    Return the index of the element of `partition` that contains `cylinder`."""
+    for i, parallel_class in enumerate(partition):
+        if cylinder in parallel_class:
             return i
+    
+    # If cylinder was not found in partition
+    return None
 
 def list_partitions(n, m, singletons=True):
     """Return a list of all ways to partition the set [1..n] into m sets.
@@ -33,25 +40,28 @@ def list_partitions(n, m, singletons=True):
     return partitions
 
 def check_pants_condition(partition, pants_list):
-    """Check the partition satisfies any homology restrictions coming from 
+    """Check the partition satisfies any homology conditions coming from 
     the pants in pants_list.
     
-    `partition` is a partition of the cylinders of horizontally periodic
-    translation surface into M-parallel classes.
+    `partition` is a partition of the horizontal cylinders into M-parallel
+    classes.
 
     `pants_list` is a list of pants, where each pants is a frozenset containing
     every cylinder in the pants
     
-    The cylinders in the pants cannot be contained in exactly two distinct
-    sets in `partition`.
+    The homology condition is the following:
+    the cylinders in the pants cannot be contained in exactly two distinct sets
+    in `partition`.
     """
 
-    for condition in pants_list:
-        partition_sets = map(
-            lambda c: find_element_in_partition(partition, c),
-            condition
+    for pants in pants_list:
+        
+        # A list of the cylinder classes that contain a cylinder of pants
+        cylinder_classes = map(
+            lambda c: find_cylinder_in_partition(partition, c),
+            pants
         )
-        if len(set(partition_sets)) == 2:
+        if len(set(cylinder_classes)) == 2:
             return False
     return True
 
@@ -64,7 +74,7 @@ def filter_pants_condition(cyl_diag, part_list):
     returns a sublist  of `part` with unwanted ones removed
     """
     cyl_graph = CylinderGraph(cyl_diag)
-    pants_list = cyl_graph.find_generic_pants()
+    pants_list = list(cyl_graph.find_generic_pants())
     return [partition for partition in part_list 
                       if check_pants_condition(partition, pants_list)]
 
@@ -134,8 +144,8 @@ def filter_homologous_condition(cyl_diag, part_list):
 def check_leaf_condition(cd, partition):
     cylinder_graph = CylinderGraph(cd)
     for leaf, neighbor in cylinder_graph.find_leaves():
-        if find_element_in_partition(partition, leaf) == \
-           find_element_in_partition(partition, neighbor):
+        if find_cylinder_in_partition(partition, leaf) == \
+           find_cylinder_in_partition(partition, neighbor):
             return False
     return True
 

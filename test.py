@@ -8,9 +8,24 @@ from surface_dynamics import AbelianStratum
 from lib import check_pants_condition, list_partitions, \
                   filter_pants_condition, find_homologous_cylinders, \
                   filter_homologous_condition, filter_leaf_condition
+from Graph import CylinderGraph
 
 
 class Test(unittest.TestCase):
+
+    def test_find_generic_pants(self):
+        cd = CylinderDiagram("(0)-(2) (1,2,3)-(4,5) (4)-(3) (5)-(0,1)")
+        cd_g = CylinderGraph(cd)
+        self.assertEqual(cd_g.find_generic_pants(), set([frozenset([1, 2, 3])]))
+        cd = CylinderDiagram("(0,3)-(5) (1)-(0) (2,5)-(3,4) (4)-(1,2)")
+        cd_g = CylinderGraph(cd)
+        self.assertEqual(cd_g.find_generic_pants(), set())
+        cd = CylinderDiagram("(0,2,1)-(3,4,5) (3)-(1) (4)-(2) (5)-(0)")
+        cd_g = CylinderGraph(cd)
+        self.assertEqual(cd_g.find_generic_pants(), set([frozenset([0, 1, 2, 3])]))
+        cd = CylinderDiagram("(0)-(2) (1)-(3) (2,4,3)-(5,6) (5)-(4) (6)-(0,1)")
+        cd_g = CylinderGraph(cd)
+        self.assertEqual(cd_g.find_generic_pants(), set([frozenset({0, 1, 4}), frozenset({2, 3, 4}), frozenset({0, 1, 2, 3})]))
 
     def test_check_pants_condition(self):
         self.assertTrue(check_pants_condition([{1}, {2}, {3}], [[1, 2, 3]]))
