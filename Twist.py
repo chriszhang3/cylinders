@@ -1,15 +1,18 @@
 """We can view H^1(M) as a quotient of H^1(M, Sigma). However, I have not found
 a good way to use this information."""
 
-
+from collections import defaultdict
 from sage.all import QQ, matrix, vector
 
 
 class Twist:
     """
-    A class useful for computing the twist space of a translation surface
+    A class useful for computing the twist space of a cylinder diagram.
     
     input: `cd` which is a surface_dynamics.CylinderDiagram
+
+    For a cylindrically stable surface `M`, the twist space `Tw M` is generated
+    by all horizontal saddle connections.
     """
     
     def __init__(self, cd):
@@ -29,6 +32,9 @@ class Twist:
         equations = {}
 
         # Write the core curves in terms of the above basis.
+        # self.core_curves is a list of vectors
+        # A vector is an instance of
+        # `sage.modules.vector_rational_dense.Vector_rational_dense`
         self.core_curves = []
 
         # All relations come from: top of cylinder = bottom of cylinder
@@ -60,3 +66,12 @@ class Twist:
                     vec[n] = 0
                     vec = vec + equations[n]
             self.core_curves.append(vec)
+    
+    def find_homologous_cylinders(self):
+        homologous_cylinders_partition = defaultdict(list)
+        
+        output = []
+        for v in homologous_cylinders_partition.values():
+            if len(v) > 1:
+                output.append(v)
+        return output
