@@ -6,9 +6,10 @@ from surface_dynamics import CylinderDiagram
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from surface_dynamics import AbelianStratum
 from lib import check_pants_condition, list_partitions, \
-                  filter_pants_condition, find_homologous_cylinders, \
+                  filter_pants_condition, \
                   filter_homologous_condition, filter_leaf_condition
 from Graph import CylinderGraph
+from Twist import Twist
 
 
 class Test(unittest.TestCase):
@@ -56,9 +57,11 @@ class Test(unittest.TestCase):
     
     def test_find_homologous_cylinders(self):
         cd = CylinderDiagram('(0,2,1)-(4,5) (3,5)-(0,2,1) (4)-(3)')
-        cd2 = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
-        self.assertEqual(find_homologous_cylinders(cd)[0], [0, 1])
-        self.assertEqual(find_homologous_cylinders(cd2)[0], [2, 3])
+        tw = Twist(cd)
+        self.assertEqual(tw.find_homologous_cylinders()[0], [0, 1])
+        cd = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
+        tw = Twist(cd)
+        self.assertEqual(tw.find_homologous_cylinders()[0], [2, 3])
     
     def test_filter_homologous_cylinders(self):
         part_list = list_partitions(3, 2)

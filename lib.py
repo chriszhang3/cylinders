@@ -1,7 +1,6 @@
-from collections import defaultdict
 from sage.all import Partitions, SetPartitions, QQ, matrix, vector
 from Graph import CylinderGraph
-
+from Twist import Twist
 
 def find_cylinder_in_partition(partition, cylinder):
     """Find the M-parallel class in `partition` than contains `cylinder`.
@@ -78,57 +77,10 @@ def filter_pants_condition(cyl_diag, part_list):
     return [partition for partition in part_list 
                       if check_pants_condition(partition, pants_list)]
 
-def find_homologous_cylinders(cyl_diag):
-    """Find any pairs of homologous cylinders.
-
-    `cyl_diag` is a cylinder diagram.
-    returns a list of lists of homologous cylinders
-    """
-    cylinders = cyl_diag.cylinders()
-    equations = {}
-    relations = []
-    homologous_cylinders_partition = defaultdict(list)
-
-    # Convert cylinders into relations.
-    for bot, top in cylinders:
-        row = [0] * cyl_diag.degree()
-        for s in bot:
-            row[s] += 1
-        for s in top:
-            row[s] -= 1
-        relations.append(row)
-    relations = matrix(QQ, relations)
-
-    # Convert relations into a matrix in reduced row echelon form.
-    # Add these relations to `equations`.
-    for row in relations.rref():
-        for i, one in enumerate(row):
-            if one == 1:
-                row[i] = 0
-                for j in range(len(row)):
-                    row[j] = -row[j]
-                equations[i] = row
-                break
-    
-    for i, (bot, _) in enumerate(cylinders):
-        vec = vector(QQ, [0] * cyl_diag.degree())
-        for s in bot:
-            vec[s] += 1
-        # print(vec)
-        for n in equations:
-            if vec[n] == 1:
-                vec[n] = 0
-                vec = vec + equations[n]
-        homologous_cylinders_partition[tuple(vec)].append(i)
-    output = []
-    for v in homologous_cylinders_partition.values():
-        if len(v) > 1:
-            output.append(v)
-    return output
-
 def check_homologous_condition(cyl_diag, partition):
     """Check that homologous cylinders are in the same M-parallel class."""
-    classes = find_homologous_cylinders(cyl_diag)
+    tw = Twist(cyl_diag)
+    classes = tw.find_homologous_cylinders()
     for homology_class in classes:
         homology_class = frozenset(homology_class)
         for f_set in partition:
