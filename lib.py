@@ -92,7 +92,10 @@ def filter_homologous_condition(cd, part_list):
 def check_leaf_condition(cd, partition):
     """Check for the following condition:
     If a cylinder C is only bordering another cylinder D, then C and D cannot
-    be in the same M-parallel class."""
+    be in the same M-parallel class.
+    
+    Note that this conditions is valid for M a invariant subvariety over Q
+    with rank at least 2."""
     cylinder_graph = CylinderGraph(cd)
     for leaf, neighbor in cylinder_graph.find_leaves():
         if find_cylinder_in_partition(partition, leaf) == \
