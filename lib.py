@@ -101,8 +101,8 @@ def check_leaf_condition(cd, partition):
     If a cylinder C is only bordering another cylinder D, then C and D cannot
     be in the same M-parallel class.
     
-    Note that this conditions is valid for M a invariant subvariety over Q
-    with rank at least 2."""
+    Note that there are some assumptions for this condition.
+    Refer to the paper for these assumptions."""
     cylinder_graph = CylinderGraph(cd)
     for leaf, neighbor in cylinder_graph.find_leaves():
         if is_simple(cd, leaf):
