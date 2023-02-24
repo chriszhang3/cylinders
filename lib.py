@@ -89,6 +89,13 @@ def filter_homologous_condition(cd, part_list):
     check_homologous_condition=False."""
     return [part for part in part_list if check_homologous_condition(cd, part)]
 
+def is_simple(cd, index):
+    """Check if cylinder number `index` is simple."""
+    cylinder = cd.cylinders()[index]
+    if len(cylinder[0]) == 1 and len(cylinder[1]) == 1:
+        return True
+    return False
+
 def check_leaf_condition(cd, partition):
     """Check for the following condition:
     If a cylinder C is only bordering another cylinder D, then C and D cannot
@@ -98,9 +105,10 @@ def check_leaf_condition(cd, partition):
     with rank at least 2."""
     cylinder_graph = CylinderGraph(cd)
     for leaf, neighbor in cylinder_graph.find_leaves():
-        if find_cylinder_in_partition(partition, leaf) == \
-           find_cylinder_in_partition(partition, neighbor):
-            return False
+        if is_simple(cd, leaf):
+            if find_cylinder_in_partition(partition, leaf) == \
+            find_cylinder_in_partition(partition, neighbor):
+                return False
     return True
 
 def filter_leaf_condition(cd, part_list):

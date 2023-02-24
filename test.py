@@ -87,6 +87,7 @@ class Test(unittest.TestCase):
         cd = CylinderDiagram("(0,1)-(0,2) (2)-(3) (3,4)-(1,5) (5)-(4)")
         good_part = filter_leaf_condition(cd, part_list)
         self.assertEqual(len(good_part), 4)
+        # Add a test where the leaf is not simple
 
 if __name__ == "__main__":
     unittest.main()
