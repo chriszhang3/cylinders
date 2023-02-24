@@ -1,4 +1,4 @@
-from sage.all import Partitions, SetPartitions, QQ, matrix, vector
+from sage.all import Partitions, SetPartitions
 from Graph import CylinderGraph
 from Twist import Twist
 
@@ -65,12 +65,7 @@ def check_pants_condition(partition, pants_list):
     return True
 
 def filter_pants_condition(cyl_diag, part_list):
-    """Remove cylinder equivalence classes that don't satisfy constraints
-    coming from generic pants.
-    
-    `cyl_diag` is a cylinder diagram
-    `part` is a list of partitions to filter through
-    returns a sublist  of `part` with unwanted ones removed
+    """Filter out the partitions in part_list when check_pants_condition=False.
     """
     cyl_graph = CylinderGraph(cyl_diag)
     pants_list = list(cyl_graph.find_generic_pants())
@@ -89,11 +84,15 @@ def check_homologous_condition(cyl_diag, partition):
                 return False
     return True
 
-def filter_homologous_condition(cyl_diag, part_list):
-    return [part for part in part_list 
-                 if check_homologous_condition(cyl_diag, part)]
+def filter_homologous_condition(cd, part_list):
+    """Filter out the partitions in part_list when 
+    check_homologous_condition=False."""
+    return [part for part in part_list if check_homologous_condition(cd, part)]
 
 def check_leaf_condition(cd, partition):
+    """Check for the following condition:
+    If a cylinder C is only bordering another cylinder D, then C and D cannot
+    be in the same M-parallel class."""
     cylinder_graph = CylinderGraph(cd)
     for leaf, neighbor in cylinder_graph.find_leaves():
         if find_cylinder_in_partition(partition, leaf) == \
@@ -102,4 +101,6 @@ def check_leaf_condition(cd, partition):
     return True
 
 def filter_leaf_condition(cd, part_list):
+    """Filter out the partitions in part_list when check_leaf_condition=False.
+    """
     return [part for part in part_list if check_leaf_condition(cd, part)]

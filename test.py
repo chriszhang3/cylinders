@@ -1,6 +1,5 @@
 """Unit Tests"""
 
-
 import unittest
 from surface_dynamics import CylinderDiagram
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
@@ -58,10 +57,13 @@ class Test(unittest.TestCase):
     def test_find_homologous_cylinders(self):
         cd = CylinderDiagram('(0,2,1)-(4,5) (3,5)-(0,2,1) (4)-(3)')
         tw = Twist(cd)
-        self.assertEqual(tw.find_homologous_cylinders()[0], [0, 1])
+        self.assertEqual(set(tw.find_homologous_cylinders()[0]), {0, 1})
         cd = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
         tw = Twist(cd)
-        self.assertEqual(tw.find_homologous_cylinders()[0], [2, 3])
+        self.assertEqual(set(tw.find_homologous_cylinders()[0]), {2, 3})
+        cd = CylinderDiagram('(0)-(2) (1,2,3)-(4,5) (4)-(3) (5)-(0,1)')
+        tw = Twist(cd)
+        self.assertEqual(tw.find_homologous_cylinders(), [])
     
     def test_filter_homologous_cylinders(self):
         part_list = list_partitions(3, 2)
@@ -72,6 +74,13 @@ class Test(unittest.TestCase):
         cd = CylinderDiagram('(0,3)-(0,5) (1,2)-(1,4) (4,6)-(3,7) (5,7)-(2,6)')
         good_part = filter_homologous_condition(cd, part_list)
         self.assertEqual(len(good_part), 3)
+        part_list = list_partitions(5, 2)
+        cd = CylinderDiagram('(0)-(2) (1)-(3) (2,4,3)-(5,6) (5)-(4) (6)-(0,1)')
+        good_part = filter_homologous_condition(cd, part_list)
+        self.assertEqual(len(good_part), 15)
+        cd = CylinderDiagram('(0,1)-(0,6) (2)-(5) (3)-(4) (4,5)-(1) (6)-(2,3)')
+        good_part = filter_homologous_condition(cd, part_list)
+        self.assertEqual(len(good_part), 7)
 
     def test_filter_leaf_condition(self):
         part_list = list_partitions(4, 2)
