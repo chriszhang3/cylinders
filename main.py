@@ -7,6 +7,7 @@ filter_pants_condition,
 filter_leaf_condition.
 """
 
+import sys
 from surface_dynamics import AbelianStratum
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from lib import list_partitions, filter_homologous_condition, \
@@ -38,10 +39,16 @@ def list_cylinder_classes(H, num_cylinders, num_classes):
         print(v)
 
 def main():
-    # H = AbelianStratum(3, 1).components()[0]
-    H = AbelianStratum(2, 2).components()[1]
-    # H = AbelianStratum(2, 1, 1).components()[0]
-    list_cylinder_classes(H, 4, 3)
+    H = AbelianStratum(2, 1, 1).components()[0]
+    for i in range(2, 5):
+        with open(f"output/{H}-c5-{i}.txt", 'w') as sys.stdout:
+            list_cylinder_classes(H, 5, i)
+    
+    strata = [AbelianStratum(3, 1).components()[0], AbelianStratum(2, 2).components()[1], AbelianStratum(2, 1, 1).components()[0]]
+    for H in strata:
+        for i in range(2, 4):
+            with open(f"output/{H}-c4-{i}.txt", 'w') as sys.stdout:
+                list_cylinder_classes(H, 4, i)
 
 if __name__ == '__main__':
     main()
