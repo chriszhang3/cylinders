@@ -13,6 +13,8 @@ For a fixed invariant subvariety $\mathcal M$, the horizontal cylinders can be p
 `sage -pip install surface-dynamics`
 
 ## Run
-Run the program using  
-`sage -python main.py`  
-the output files will be stored in a chosen directory. By default the directory is `output`.
+Run the program using:
+
+`sage -python main.py`
+
+The output files will be stored in a chosen directory. By default the directory is `output/`.
