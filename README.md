@@ -14,5 +14,5 @@ For a fixed invariant subvariety $\mathcal M$, the horizontal cylinders can be p
 
 ## Run
 Run the program using  
-`sage -python main.py`
+`sage -python main.py`  
 the output files will be stored in a chosen directory. By default the directory is `output`.
