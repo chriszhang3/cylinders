@@ -38,16 +38,22 @@ def list_cylinder_classes(H, num_cylinders, num_classes):
         print(f"{i+1}. {k}")
         print(v)
 
+def name_of_stratum(H):
+    name = 'h'
+    for z in H.stratum().zeros():
+        name = name + str(z)
+    return name
+
 def main():
     H = AbelianStratum(2, 1, 1).components()[0]
-    for i in range(2, 5):
-        with open(f"output/{H}-c5-{i}.txt", 'w') as sys.stdout:
+    for i in range(2, 5):     
+        with open(f"output/{name_of_stratum(H)}-c5-{i}.txt", 'w') as sys.stdout:
             list_cylinder_classes(H, 5, i)
     
     strata = [AbelianStratum(3, 1).components()[0], AbelianStratum(2, 2).components()[1], AbelianStratum(2, 1, 1).components()[0]]
     for H in strata:
         for i in range(2, 4):
-            with open(f"output/{H}-c4-{i}.txt", 'w') as sys.stdout:
+            with open(f"output/{name_of_stratum(H)}-c4-{i}.txt", 'w') as sys.stdout:
                 list_cylinder_classes(H, 4, i)
 
 if __name__ == '__main__':
