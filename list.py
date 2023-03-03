@@ -1,3 +1,6 @@
+"""A script for listing the contents of
+https://flatsurf.github.io/surface-dynamics/database.html"""
+
 from surface_dynamics import AbelianStratum
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 

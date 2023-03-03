@@ -1,13 +1,10 @@
-"""We can view H^1(M) as a quotient of H^1(M, Sigma). However, I have not found
-a good way to use this information."""
-
-
+from collections import defaultdict
 from sage.all import QQ, matrix, vector
 
 
 class Twist:
     """
-    A class useful for computing the twist space of a translation surface
+    A class useful for computing the twist space of a cylinder diagram.
     
     input: `cd` which is a surface_dynamics.CylinderDiagram
     """
@@ -24,11 +21,18 @@ class Twist:
         # Each row gives an equation Σ_i row[i]*saddle[i] = 0
         relations = []
 
-        # Using the equations, write some saddles as sums of other saddles.
-        # Subset of the saddles will be a basis for homology.
+        # Using the equations, write some saddles as linear combinations of
+        # other saddles.
+        # Subset of the saddles will be linearly independent elements of
+        # H^1(M, Sigma).
+        # We will be able to write the elements of twist space as linear
+        # combinations of these elements.
         equations = {}
 
         # Write the core curves in terms of the above basis.
+        # self.core_curves is a list of vectors
+        # A vector is an instance of
+        # `sage.modules.vector_rational_dense.Vector_rational_dense`
         self.core_curves = []
 
         # All relations come from: top of cylinder = bottom of cylinder
@@ -60,3 +64,23 @@ class Twist:
                     vec[n] = 0
                     vec = vec + equations[n]
             self.core_curves.append(vec)
+    
+    def find_homologous_cylinders(self):
+        """List all classes of homologous cylinders.
+        
+        Output: List of lists. Each list is an equivalence class of > 1
+        homologous cylinders."""
+
+        output = []
+
+        # A dictionary whose keys are elements of homology and the values are
+        # cylinders whose core curves are that homology class.
+        homologous_cylinders_partition = defaultdict(list)
+        for i, coefficients in enumerate(self.core_curves):
+            homologous_cylinders_partition[tuple(coefficients)].append(i)
+
+        # Only output if an equivalence class contains more than 1 cylinder.
+        for homology_class in homologous_cylinders_partition.values():
+            if len(homology_class) > 1:
+                output.append(homology_class)
+        return output

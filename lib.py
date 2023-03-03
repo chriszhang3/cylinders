@@ -1,7 +1,6 @@
-from collections import defaultdict
-from sage.all import Partitions, SetPartitions, QQ, matrix, vector
+from sage.all import Partitions, SetPartitions
 from Graph import CylinderGraph
-
+from Twist import Twist
 
 def list_partitions(n, m, singletons=True):
     """Return a list of all ways to partition the set [1..n] into m sets.
@@ -66,69 +65,17 @@ def check_pants_condition(partition, pants_list):
     return True
 
 def filter_pants_condition(cyl_diag, part_list):
-    """Remove cylinder equivalence classes that don't satisfy constraints
-    coming from generic pants.
-    
-    `cyl_diag` is a cylinder diagram
-    `part` is a list of partitions to filter through
-    returns a sublist  of `part` with unwanted ones removed
+    """Filter out the partitions in part_list when check_pants_condition=False.
     """
     cyl_graph = CylinderGraph(cyl_diag)
     pants_list = list(cyl_graph.find_generic_pants())
     return [partition for partition in part_list 
                       if check_pants_condition(partition, pants_list)]
 
-def find_homologous_cylinders(cyl_diag):
-    """Find any pairs of homologous cylinders.
-
-    `cyl_diag` is a cylinder diagram.
-    returns a list of lists of homologous cylinders
-    """
-    cylinders = cyl_diag.cylinders()
-    equations = {}
-    relations = []
-    homologous_cylinders_partition = defaultdict(list)
-
-    # Convert cylinders into relations.
-    for bot, top in cylinders:
-        row = [0] * cyl_diag.degree()
-        for s in bot:
-            row[s] += 1
-        for s in top:
-            row[s] -= 1
-        relations.append(row)
-    relations = matrix(QQ, relations)
-
-    # Convert relations into a matrix in reduced row echelon form.
-    # Add these relations to `equations`.
-    for row in relations.rref():
-        for i, one in enumerate(row):
-            if one == 1:
-                row[i] = 0
-                for j in range(len(row)):
-                    row[j] = -row[j]
-                equations[i] = row
-                break
-    
-    for i, (bot, _) in enumerate(cylinders):
-        vec = vector(QQ, [0] * cyl_diag.degree())
-        for s in bot:
-            vec[s] += 1
-        # print(vec)
-        for n in equations:
-            if vec[n] == 1:
-                vec[n] = 0
-                vec = vec + equations[n]
-        homologous_cylinders_partition[tuple(vec)].append(i)
-    output = []
-    for v in homologous_cylinders_partition.values():
-        if len(v) > 1:
-            output.append(v)
-    return output
-
 def check_homologous_condition(cyl_diag, partition):
     """Check that homologous cylinders are in the same M-parallel class."""
-    classes = find_homologous_cylinders(cyl_diag)
+    tw = Twist(cyl_diag)
+    classes = tw.find_homologous_cylinders()
     for homology_class in classes:
         homology_class = frozenset(homology_class)
         for f_set in partition:
@@ -137,17 +84,34 @@ def check_homologous_condition(cyl_diag, partition):
                 return False
     return True
 
-def filter_homologous_condition(cyl_diag, part_list):
-    return [part for part in part_list 
-                 if check_homologous_condition(cyl_diag, part)]
+def filter_homologous_condition(cd, part_list):
+    """Filter out the partitions in part_list when 
+    check_homologous_condition=False."""
+    return [part for part in part_list if check_homologous_condition(cd, part)]
+
+def is_simple(cd, index):
+    """Check if cylinder number `index` is simple."""
+    cylinder = cd.cylinders()[index]
+    if len(cylinder[0]) == 1 and len(cylinder[1]) == 1:
+        return True
+    return False
 
 def check_leaf_condition(cd, partition):
+    """Check for the following condition:
+    If a cylinder C is only bordering another cylinder D, then C and D cannot
+    be in the same M-parallel class.
+    
+    Note that there are some assumptions for this condition.
+    Refer to the paper for these assumptions."""
     cylinder_graph = CylinderGraph(cd)
     for leaf, neighbor in cylinder_graph.find_leaves():
-        if find_cylinder_in_partition(partition, leaf) == \
-           find_cylinder_in_partition(partition, neighbor):
-            return False
+        if is_simple(cd, leaf):
+            if find_cylinder_in_partition(partition, leaf) == \
+            find_cylinder_in_partition(partition, neighbor):
+                return False
     return True
 
 def filter_leaf_condition(cd, part_list):
+    """Filter out the partitions in part_list when check_leaf_condition=False.
+    """
     return [part for part in part_list if check_leaf_condition(cd, part)]
