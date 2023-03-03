@@ -11,3 +11,8 @@ For a fixed invariant subvariety $\mathcal M$, the horizontal cylinders can be p
 - [Instructions](https://doc.sagemath.org/html/en/installation/index.html) for installing Sage.
 - After Sage is installed, you can install the surface-dynamics package with  
 `sage -pip install surface-dynamics`
+
+## Run
+Run the program using  
+`sage -python main.py`
+the output files will be stored in a chosen directory. By default the directory is `output`.
