@@ -115,3 +115,8 @@ def filter_leaf_condition(cd, part_list):
     """Filter out the partitions in part_list when check_leaf_condition=False.
     """
     return [part for part in part_list if check_leaf_condition(cd, part)]
+
+def filter_standard_twist_condition(cd, part_list):
+    tw = Twist(cd)
+    return [part for part in part_list 
+                 if tw.check_standard_twist_condition(part)]

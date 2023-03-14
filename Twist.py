@@ -1,4 +1,6 @@
 from collections import defaultdict
+import numpy as np
+from scipy.optimize import nnls
 from sage.all import QQ, matrix, vector
 
 
@@ -84,3 +86,35 @@ class Twist:
             if len(homology_class) > 1:
                 output.append(homology_class)
         return output
+    
+    def to_numpy(self, index):
+        return self.core_curves[index].numpy()
+
+    def class_to_numpy(self, parallel_class):
+        return np.stack([self.to_numpy(i) for i in parallel_class], axis=0)
+
+    def check_ordered_partition(self, partition):
+        c0 = list(partition[0])
+        c1 = list(partition[1])
+        c2 = list(partition[2])
+        b = self.to_numpy(c0[0])
+        A = np.append(self.class_to_numpy(c1), self.class_to_numpy(c2), axis=0)
+        if len(c0) > 1:
+            A0 = -self.class_to_numpy(c0[1:])
+            A = np.append(A0, A, axis=0)
+        
+        _, error = nnls(A.T, b)
+        if error < 1.0e-8:
+            return True
+        return False
+
+    def check_standard_twist_condition(self, partition):
+        assert(len(partition) == 3)
+        partition = list(partition)
+        order1 = [partition[0], partition[1], partition[2]]
+        order2 = [partition[1], partition[0], partition[2]]
+        order3 = [partition[2], partition[1], partition[0]]
+        return any([self.check_ordered_partition(order1),
+                    self.check_ordered_partition(order2),
+                    self.check_ordered_partition(order3)])
+        
