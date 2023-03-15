@@ -12,7 +12,8 @@ import sys
 from surface_dynamics import AbelianStratum
 from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from lib import list_partitions, filter_homologous_condition, \
-                filter_pants_condition, filter_leaf_condition
+                filter_pants_condition, filter_leaf_condition, \
+                filter_standard_twist_condition
 
 def filter_partitions(cyl_diag_list, num_classes):
     """For each cylinder diagram in cyl_diag_list, list all partitions with 
@@ -26,6 +27,7 @@ def filter_partitions(cyl_diag_list, num_classes):
         part = filter_pants_condition(cd, part)
         part = filter_homologous_condition(cd, part)
         part = filter_leaf_condition(cd, part)
+        part = filter_standard_twist_condition(cd, part)
         output[cd] = part
     return output
 
