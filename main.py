@@ -31,15 +31,20 @@ def filter_partitions(cyl_diag_list, num_classes):
         output[cd] = part
     return output
 
-def list_cylinder_classes(H, num_cylinders, num_classes):
+def list_cylinder_classes(H, num_cylinders, num_classes, directory):
     """Runs filter_partitions on every cylinder diagram with num_cylinders
     number of cylinders in a stratum H."""
     C = CylinderDiagrams()
-    cyl_diag_list = C.get_iterator(H, num_cylinders)
-    valid = filter_partitions(cyl_diag_list, num_classes)
-    for i, (k, v) in enumerate(valid.items()):
-        print(f"{i+1}. {k}")
-        print(v)
+    try:
+        cyl_diag_list = C.get_iterator(H, num_cylinders)
+        with open(f"{directory}/{name_of_stratum(H)}-c{num_cylinders}-{num_classes}.txt", 'w') as sys.stdout:
+            valid = filter_partitions(cyl_diag_list, num_classes)
+            for i, (k, v) in enumerate(valid.items()):
+                print(f"{i+1}. {k}")
+                print(v)
+    except ValueError:
+        return
+    
 
 def name_of_stratum(H):
     name = 'h'
@@ -51,17 +56,12 @@ def main():
     directory = 'output'
     if not os.path.exists(directory):
        os.makedirs(directory)
-
-    H = AbelianStratum(2, 1, 1).components()[0]
-    for i in range(2, 5):     
-        with open(f"{directory}/{name_of_stratum(H)}-c5-{i}.txt", 'w') as sys.stdout:
-            list_cylinder_classes(H, 5, i)
     
-    strata = [AbelianStratum(3, 1).components()[0], AbelianStratum(2, 2).components()[1], AbelianStratum(2, 1, 1).components()[0]]
+    strata = [AbelianStratum(3, 1).components()[0], AbelianStratum(2, 2).components()[1], AbelianStratum(2, 1, 1).components()[0], AbelianStratum(1, 1, 1, 1).components()[0]]
     for H in strata:
-        for i in range(2, 4):
-            with open(f"{directory}/{name_of_stratum(H)}-c4-{i}.txt", 'w') as sys.stdout:
-                list_cylinder_classes(H, 4, i)
+        for num_cylinders in range(4, 7):
+            for i in range(2, num_cylinders):
+                list_cylinder_classes(H, num_cylinders, i, directory)
 
 if __name__ == '__main__':
     main()
