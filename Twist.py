@@ -120,7 +120,7 @@ class Twist:
         """If the partition does not have three equivalence classes, return
         true. Otherwise, check that the equation
         Σa_iα_i = Σb_jβ_j + Σc_kγ_k
-        has a solution for a_i,b_j,c_k > 0."""
+        has a solution for a_i,b_j,c_k >= 1."""
 
         n = len(partition)
         partition = list(partition)
