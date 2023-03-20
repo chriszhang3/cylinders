@@ -6,7 +6,8 @@ from surface_dynamics.databases.flat_surfaces import CylinderDiagrams
 from surface_dynamics import AbelianStratum
 from lib import check_pants_condition, list_partitions, \
                   filter_pants_condition, \
-                  filter_homologous_condition, filter_leaf_condition
+                  filter_homologous_condition, filter_leaf_condition, \
+                  filter_standard_twist_condition
 from Graph import CylinderGraph
 from Twist import Twist
 
@@ -105,7 +106,39 @@ class Test(unittest.TestCase):
         cd = CylinderDiagram("(0,3)-(5) (1)-(2) (2,5)-(3,4) (4)-(0,1)")
         good_part = filter_leaf_condition(cd, part_list)
         self.assertEqual(len(good_part), 7)
+    
+    def test_filter_standard_twist_condition(self):
+        part_list = list_partitions(4, 3)
+        cd = CylinderDiagram("(0,3)-(5) (1)-(0) (2,5)-(3,4) (4)-(1,2)")
+        good_part = filter_standard_twist_condition(cd, part_list)
+        good_part = [set(part) for part in good_part]
+        possible = {frozenset({0, 3}), frozenset({1}), frozenset({2})}
+        self.assertTrue(possible in good_part)
 
+        part_list = list_partitions(4, 3)
+        cd = CylinderDiagram("(0,2,1)-(3,4,5) (3)-(1) (4)-(2) (5)-(0)")
+        good_part = filter_standard_twist_condition(cd, part_list)
+        good_part = [set(part) for part in good_part]
+        possible = {frozenset({0}), frozenset({1, 3}), frozenset({2})}
+        self.assertTrue(possible in good_part)
+        possible = {frozenset({0}), frozenset({1, 2}), frozenset({3})}
+        self.assertTrue(possible in good_part)
+        possible = {frozenset({0}), frozenset({1}), frozenset({2, 3})}
+        self.assertTrue(possible in good_part)
+
+        part_list = list_partitions(5, 3)
+        cd = CylinderDiagram("(0,2)-(6) (1)-(3) (3,6)-(4,5) (4)-(0) (5)-(1,2)")
+        good_part = filter_standard_twist_condition(cd, part_list)
+        good_part = [set(part) for part in good_part]
+        possible = {frozenset({0, 4}), frozenset({1, 3}), frozenset({2})}
+        self.assertTrue(possible in good_part)
+
+        part_list = list_partitions(5, 3)
+        cd = CylinderDiagram("(0,6)-(4,5) (1,2)-(3,6) (3)-(2) (4)-(1) (5)-(0)")
+        good_part = filter_standard_twist_condition(cd, part_list)
+        good_part = [set(part) for part in good_part]
+        possible = {frozenset({0, 1}), frozenset({2, 4}), frozenset({3})}
+        self.assertTrue(possible in good_part)
 
 if __name__ == "__main__":
     unittest.main()

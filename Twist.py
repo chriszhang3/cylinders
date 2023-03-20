@@ -117,18 +117,21 @@ class Twist:
         return False
 
     def check_standard_twist_condition(self, partition):
-        """ If the partition does not have three equivalence classes, return
+        """If the partition does not have three equivalence classes, return
         true. Otherwise, check that the equation
         Σa_iα_i = Σb_jβ_j + Σc_kγ_k
-        has a solution for a_i,b_j,c_k > 0.
-        """
+        has a solution for a_i,b_j,c_k > 0."""
 
-        if len(partition) != 3:
-            return True
+        n = len(partition)
         partition = list(partition)
-        order1 = [partition[0], partition[1], partition[2]]
-        order2 = [partition[1], partition[0], partition[2]]
-        order3 = [partition[2], partition[1], partition[0]]
-        return any([self.ordered_partition(order1),
-                    self.ordered_partition(order2),
-                    self.ordered_partition(order3)])
+        for i in range(n-2):
+            for j in range(i+1, n-1):
+                for k in range(j+1, n):
+                    order1 = [partition[i], partition[j], partition[k]]
+                    order2 = [partition[j], partition[k], partition[i]]
+                    order3 = [partition[k], partition[i], partition[j]]
+                    if not any([self.ordered_partition(order1),
+                                self.ordered_partition(order2),
+                                self.ordered_partition(order3)]):
+                        return False
+        return True
