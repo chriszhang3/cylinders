@@ -104,14 +104,15 @@ class Twist:
         c0 = list(partition[0])
         c1 = list(partition[1])
         c2 = list(partition[2])
-        b = self.to_numpy(c0[0])
-        A = np.append(self.class_to_numpy(c1), self.class_to_numpy(c2), axis=0)
-        if len(c0) > 1:
-            A0 = -self.class_to_numpy(c0[1:])
-            A = np.append(A0, A, axis=0)
+        A = np.concatenate(
+            [self.class_to_numpy(c0),
+            self.class_to_numpy(c1), 
+            -self.class_to_numpy(c2)],
+            axis=0)        
+        b = -np.sum(A, axis=0)
         
-        _, error = optimize.nnls(A.T, b)
-        if error < 1.0e-8:
+        _, minimum = optimize.nnls(A.T, b)
+        if minimum < 1.0e-8:
             return True
         return False
 

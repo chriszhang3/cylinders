@@ -44,7 +44,6 @@ def list_cylinder_classes(H, num_cylinders, num_classes, directory):
                 print(v)
     except ValueError:
         return
-    
 
 def name_of_stratum(H):
     name = 'h'
