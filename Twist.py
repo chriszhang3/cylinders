@@ -112,7 +112,12 @@ class Twist:
         b = -np.sum(A, axis=0)
         
         _, minimum = optimize.nnls(A.T, b)
-        if minimum < 1.0e-8:
+
+        # According to the Python 3.10 documentation, almost all platforms have 
+        # 53 bits of precision for floats, so the errors should be on the order
+        # of 10^-16. The `margin_of_error` can be adjusted if needed.
+        margin_of_error = 1.0e-8
+        if minimum < margin_of_error:
             return True
         return False
 
