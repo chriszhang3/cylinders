@@ -115,7 +115,8 @@ class Twist:
 
         # According to the Python 3.10 documentation, almost all platforms have 
         # 53 bits of precision for floats, so the errors should be on the order
-        # of 10^-16. The `margin_of_error` can be adjusted if needed.
+        # of 10^-16.
+        # See the paper for an upper bound on the margin of error.
         margin_of_error = 1.0e-8
         if minimum < margin_of_error:
             return True
