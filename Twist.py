@@ -99,6 +99,8 @@ class Twist:
         return (matrix([self.core_curves[i] for i in m_class]))
 
     def ordered_partition(self, partition):
+        """Checks the standard twist condition on a specific ordered set of the
+        equivalence classes."""
         c0 = list(partition[0])
         c1 = list(partition[1])
         c2 = list(partition[2])

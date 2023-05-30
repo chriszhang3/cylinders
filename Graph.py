@@ -1,4 +1,4 @@
-import networkx as nx
+from sage.all import DiGraph, matrix
 
 class CylinderGraph:
     """
@@ -23,11 +23,12 @@ class CylinderGraph:
                 saddle_data[saddle][1] = i
             for saddle in top:
                 saddle_data[saddle][0] = i
+        
+        adjacency_matrix = matrix(len(cylinders))
+        for pre, suc in saddle_data:
+            adjacency_matrix[pre, suc] += 1
 
-        self.digraph = nx.DiGraph()
-        self.digraph.add_nodes_from(range(len(cylinders)))
-        for source, dest in saddle_data:
-            self.digraph.add_edge(source, dest)
+        self.digraph = DiGraph(adjacency_matrix, loops=True, weighted = True)
         
     # TODO: Add unittests for this
     def find_generalized_pants(self):
@@ -48,20 +49,20 @@ class CylinderGraph:
         for n in self.digraph:
             # If every cylinder above `C` is only adjacent to `C` along its
             # bottom, this is a generalized pants.
-            successors = list(self.digraph.successors(n))
-            if all([list(self.digraph.predecessors(suc)) == [n] 
-                    for suc in successors]):
+            neighbors_out = list(self.digraph.neighbors_out(n))
+            if all([list(self.digraph.neighbors_in(suc)) == [n] 
+                    for suc in neighbors_out]):
                 
-                pants = frozenset([n] + successors)
+                pants = frozenset([n] + neighbors_out)
                 pants_set.add(pants)
 
             # If every cylinder below `C` is only adjacent to `C` along its
             # top, this is a generalized pants.
-            predecessors = list(self.digraph.predecessors(n))
-            if all([list(self.digraph.successors(pre)) == [n] 
-                    for pre in predecessors]):
+            neighbors_in = list(self.digraph.neighbors_in(n))
+            if all([list(self.digraph.neighbors_out(pre)) == [n] 
+                    for pre in neighbors_in]):
 
-                pants = frozenset([n] + predecessors)
+                pants = frozenset([n] + neighbors_in)
                 pants_set.add(pants)
         return pants_set
     
@@ -75,8 +76,8 @@ class CylinderGraph:
         For a given leaf, `neighbor` is it's unique neighbor."""
         leaf_neighbers = []
         for n in self.digraph:
-            neighbors = set(self.digraph.successors(n)) | \
-                        set(self.digraph.predecessors(n))
+            neighbors = set(self.digraph.neighbors_out(n)) | \
+                        set(self.digraph.neighbors_in(n))
             if len(neighbors) == 1:
                 leaf_neighbers.append((n, next(iter(neighbors))))
         return leaf_neighbers
