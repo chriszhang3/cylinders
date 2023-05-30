@@ -15,6 +15,7 @@ class CylinderGraph:
         self.digraph is the graph described above."""
         cylinders = cd.cylinders()
 
+        # Using `cylinders`, create a list of edges.
         # The i-th element of saddle_data is [under, above], where `under` is
         # the cylinder under saddle i and `above` is the saddle above it
         saddle_data = [[None, None] for _ in range(cd.degree())]
@@ -24,6 +25,8 @@ class CylinderGraph:
             for saddle in top:
                 saddle_data[saddle][0] = i
         
+        # Turns the list of edges into an adjacency matrix. The reason we're
+        # doing this is that we want a weighted graph.
         adjacency_matrix = matrix(len(cylinders))
         for pre, suc in saddle_data:
             adjacency_matrix[pre, suc] += 1

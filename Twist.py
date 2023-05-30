@@ -104,12 +104,17 @@ class Twist:
         c0 = list(partition[0])
         c1 = list(partition[1])
         c2 = list(partition[2])
+
+        # Convert the equation into the form Ax - b = 0
         A = block_matrix(3, 1,
                          [self.class_matrix(c0), self.class_matrix(c1), -self.class_matrix(c2)],
                          subdivide=False)  
         b = -sum(A)
         A = A.T
         
+        # Find any solution to the linear programming problem
+        # Ax - b = 0
+        # x >= 0
         p = MixedIntegerLinearProgram(maximization=False)
         x = p.new_variable(real=True, nonnegative=True)
         p.add_constraint(A*x == b)
@@ -117,6 +122,7 @@ class Twist:
             p.solve()
             return True
         except MIPSolverException:
+            # MIPSolverException means that no solution exists.
             return False
 
     def check_standard_twist_condition(self, partition):
