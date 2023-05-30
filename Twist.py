@@ -1,8 +1,9 @@
 from collections import defaultdict
 import numpy as np
 from scipy import optimize
-from sage.all import QQ, matrix, vector, span
-
+from sage.all import QQ, matrix, vector, span, block_matrix
+from sage.all import MixedIntegerLinearProgram
+from sage.numerical.mip import MIPSolverException
 
 class Twist:
     """
@@ -94,33 +95,29 @@ class Twist:
         of the horizontal cylinders."""
         return span(self.core_curves).dimension()
     
-    def to_numpy(self, index):
-        return self.core_curves[index].numpy()
-
-    def class_to_numpy(self, parallel_class):
-        return np.stack([self.to_numpy(i) for i in parallel_class], axis=0)
+    def class_matrix(self, m_class):
+        """Stacks the core curves of the cylinders in an M-parallel class into a
+        single matrix."""
+        return (matrix([self.core_curves[i] for i in m_class]))
 
     def ordered_partition(self, partition):
         c0 = list(partition[0])
         c1 = list(partition[1])
         c2 = list(partition[2])
-        A = np.concatenate(
-            [self.class_to_numpy(c0),
-            self.class_to_numpy(c1), 
-            -self.class_to_numpy(c2)],
-            axis=0)        
-        b = -np.sum(A, axis=0)
+        A = block_matrix(3, 1,
+                         [self.class_matrix(c0), self.class_matrix(c1), -self.class_matrix(c2)],
+                         subdivide=False)  
+        b = -sum(A)
+        A = A.T
         
-        _, minimum = optimize.nnls(A.T, b)
-
-        # According to the Python 3.10 documentation, almost all platforms have 
-        # 53 bits of precision for floats, so the errors should be on the order
-        # of 10^-16.
-        # See the paper for an upper bound on the margin of error.
-        margin_of_error = 1.0e-8
-        if minimum < margin_of_error:
+        p = MixedIntegerLinearProgram(maximization=False)
+        x = p.new_variable(real=True, nonnegative=True)
+        p.add_constraint(A*x == b)
+        try:
+            p.solve()
             return True
-        return False
+        except MIPSolverException:
+            return False
 
     def check_standard_twist_condition(self, partition):
         """If the partition does not have three equivalence classes, return
