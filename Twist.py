@@ -1,6 +1,4 @@
 from collections import defaultdict
-import numpy as np
-from scipy import optimize
 from sage.all import QQ, matrix, vector, span, block_matrix
 from sage.all import MixedIntegerLinearProgram
 from sage.numerical.mip import MIPSolverException

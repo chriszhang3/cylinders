@@ -30,7 +30,7 @@ class CylinderGraph:
             self.digraph.add_edge(source, dest)
         
     # TODO: Add unittests for this
-    def find_generic_pants(self):
+    def find_generalized_pants(self):
         """Finds cases when n cylinders are all only attached to the side
         of a single cylinder. This is like a generalized version of a
         topological pair of pants allows n pant legs.
@@ -47,7 +47,7 @@ class CylinderGraph:
         pants_set = set()
         for n in self.digraph:
             # If every cylinder above `C` is only adjacent to `C` along its
-            # bottom, this is a generic pants.
+            # bottom, this is a generalized pants.
             successors = list(self.digraph.successors(n))
             if all([list(self.digraph.predecessors(suc)) == [n] 
                     for suc in successors]):
@@ -56,7 +56,7 @@ class CylinderGraph:
                 pants_set.add(pants)
 
             # If every cylinder below `C` is only adjacent to `C` along its
-            # top, this is a generic pants.
+            # top, this is a generalized pants.
             predecessors = list(self.digraph.predecessors(n))
             if all([list(self.digraph.successors(pre)) == [n] 
                     for pre in predecessors]):

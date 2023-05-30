@@ -68,7 +68,7 @@ def filter_pants_condition(cyl_diag, part_list):
     """Filter out the partitions in part_list when check_pants_condition=False.
     """
     cyl_graph = CylinderGraph(cyl_diag)
-    pants_list = list(cyl_graph.find_generic_pants())
+    pants_list = list(cyl_graph.find_generalized_pants())
     return [partition for partition in part_list 
                       if check_pants_condition(partition, pants_list)]
 
