@@ -1,7 +1,6 @@
 from collections import defaultdict
-from sage.all import QQ, matrix, vector, span, block_matrix
-from sage.all import MixedIntegerLinearProgram
-from sage.numerical.mip import MIPSolverException
+from sage.all import QQ, matrix, vector, span
+
 
 class Twist:
     """
@@ -93,54 +92,3 @@ class Twist:
         of the horizontal cylinders."""
         return span(self.core_curves).dimension()
     
-    def class_matrix(self, m_class):
-        """Stacks the core curves of the cylinders in an M-parallel class into a
-        single matrix."""
-        return (matrix([self.core_curves[i] for i in m_class]))
-
-    def ordered_partition(self, partition):
-        """Checks the standard twist condition on a specific ordered set of the
-        equivalence classes."""
-        c0 = list(partition[0])
-        c1 = list(partition[1])
-        c2 = list(partition[2])
-
-        # Convert the equation into the form Ax - b = 0
-        A = block_matrix(3, 1,
-                         [self.class_matrix(c0), self.class_matrix(c1), -self.class_matrix(c2)],
-                         subdivide=False)  
-        b = -sum(A)
-        A = A.T
-        
-        # Find any solution to the linear programming problem
-        # Ax - b = 0
-        # x >= 0
-        p = MixedIntegerLinearProgram(maximization=False)
-        x = p.new_variable(real=True, nonnegative=True)
-        p.add_constraint(A*x == b)
-        try:
-            p.solve()
-            return True
-        except MIPSolverException:
-            # MIPSolverException means that no solution exists.
-            return False
-
-    def check_standard_twist_condition(self, partition):
-        """If the partition does not have three equivalence classes, return
-        true. Otherwise, check that the equation
-        Σa_iα_i = Σb_jβ_j + Σc_kγ_k
-        has a solution for a_i,b_j,c_k >= 1."""
-
-        n = len(partition)
-        partition = list(partition)
-        for i in range(n-2):
-            for j in range(i+1, n-1):
-                for k in range(j+1, n):
-                    order1 = [partition[i], partition[j], partition[k]]
-                    order2 = [partition[j], partition[k], partition[i]]
-                    order3 = [partition[k], partition[i], partition[j]]
-                    if not any([self.ordered_partition(order1),
-                                self.ordered_partition(order2),
-                                self.ordered_partition(order3)]):
-                        return False
-        return True
