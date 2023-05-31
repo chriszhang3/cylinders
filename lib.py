@@ -56,7 +56,9 @@ def find_leaves(digraph):
             leaf_neighbers.append((n, next(iter(neighbors))))
     return leaf_neighbers
 
-### Find and filter functions
+
+
+### Partition related
 def list_partitions(n, m, singletons=True):
     """Return a list of all ways to partition the set [1..n] into m sets.
     
@@ -93,6 +95,7 @@ def find_cylinder_in_partition(partition, cylinder):
     # If cylinder was not found in partition
     return None
 
+### Pants condition
 def check_pants_condition(partition, pants_list):
     """Check the partition satisfies any homology conditions coming from 
     the pants in pants_list.
@@ -127,6 +130,7 @@ def filter_pants_condition(cyl_diag, part_list):
     return [partition for partition in part_list 
                       if check_pants_condition(partition, pants_list)]
 
+### Homologous condition
 def check_homologous_condition(cyl_diag, partition):
     """Check that homologous cylinders are in the same M-parallel class."""
     tw = Twist(cyl_diag)
@@ -144,6 +148,7 @@ def filter_homologous_condition(cd, part_list):
     check_homologous_condition=False."""
     return [part for part in part_list if check_homologous_condition(cd, part)]
 
+### Leaf condition
 def is_simple(cd, index):
     """Check if cylinder number `index` is simple."""
     cylinder = cd.cylinders()[index]
@@ -170,6 +175,8 @@ def filter_leaf_condition(cd, part_list):
     """Filter out the partitions in part_list when check_leaf_condition=False.
     """
     return [part for part in part_list if check_leaf_condition(cd, part)]
+
+### Standard Twist Condition
 
 def filter_standard_twist_condition(cd, part_list):
     tw = Twist(cd)
