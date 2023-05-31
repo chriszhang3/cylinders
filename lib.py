@@ -2,6 +2,61 @@ from sage.all import Partitions, SetPartitions
 from Graph import CylinderGraph
 from Twist import Twist
 
+
+### Graph Functions
+# TODO: Add unittests for this
+def find_generalized_pants(digraph):
+    """Finds cases when n cylinders are all only attached to the side
+    of a single cylinder. This is like a generalized version of a
+    topological pair of pants allows n pant legs.
+    
+    Input: A cylinder diagram.
+    
+    Output: A set of pants. Each pants is a frozenset consisting of the 
+    cylinders in the pants.
+    
+    Note: For Python 3.7 and higher, frozensets should maintain insertion
+    order. Thus, the first element of each pants is the waist curve and the
+    rest are the pant legs. However, we do not use this in our code."""
+
+    pants_set = set()
+    for n in digraph:
+        # If every cylinder above `C` is only adjacent to `C` along its
+        # bottom, this is a generalized pants.
+        neighbors_out = list(digraph.neighbors_out(n))
+        if all([list(digraph.neighbors_in(suc)) == [n] 
+                for suc in neighbors_out]):
+            
+            pants = frozenset([n] + neighbors_out)
+            pants_set.add(pants)
+
+        # If every cylinder below `C` is only adjacent to `C` along its
+        # top, this is a generalized pants.
+        neighbors_in = list(digraph.neighbors_in(n))
+        if all([list(digraph.neighbors_out(pre)) == [n] 
+                for pre in neighbors_in]):
+
+            pants = frozenset([n] + neighbors_in)
+            pants_set.add(pants)
+    return pants_set
+
+def find_leaves(digraph):
+    """Return the tuples (leaf, neighbor) for all leaves of `digraph`.
+    
+    A leaf is a vertex such that it only has one neighbor, where we 
+    count a vertex as a neighbor if there is either an edge coming from it
+    or an edge going to it.
+    
+    For a given leaf, `neighbor` is it's unique neighbor."""
+    leaf_neighbers = []
+    for n in digraph:
+        neighbors = set(digraph.neighbors_out(n)) | \
+                    set(digraph.neighbors_in(n))
+        if len(neighbors) == 1:
+            leaf_neighbers.append((n, next(iter(neighbors))))
+    return leaf_neighbers
+
+### Find and filter functions
 def list_partitions(n, m, singletons=True):
     """Return a list of all ways to partition the set [1..n] into m sets.
     
@@ -67,8 +122,8 @@ def check_pants_condition(partition, pants_list):
 def filter_pants_condition(cyl_diag, part_list):
     """Filter out the partitions in part_list when check_pants_condition=False.
     """
-    cyl_graph = CylinderGraph(cyl_diag)
-    pants_list = list(cyl_graph.find_generalized_pants())
+    cyl_graph = CylinderGraph(cyl_diag).digraph
+    pants_list = list(find_generalized_pants(cyl_graph))
     return [partition for partition in part_list 
                       if check_pants_condition(partition, pants_list)]
 
@@ -103,8 +158,8 @@ def check_leaf_condition(cd, partition):
     
     Note that there are some assumptions for this condition.
     Refer to the paper for these assumptions."""
-    cylinder_graph = CylinderGraph(cd)
-    for leaf, neighbor in cylinder_graph.find_leaves():
+    cyl_graph = CylinderGraph(cd).digraph
+    for leaf, neighbor in find_leaves(cyl_graph):
         if is_simple(cd, leaf):
             if find_cylinder_in_partition(partition, leaf) == \
             find_cylinder_in_partition(partition, neighbor):

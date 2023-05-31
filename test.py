@@ -7,7 +7,7 @@ from surface_dynamics import AbelianStratum
 from lib import check_pants_condition, list_partitions, \
                   filter_pants_condition, \
                   filter_homologous_condition, filter_leaf_condition, \
-                  filter_standard_twist_condition
+                  filter_standard_twist_condition, find_generalized_pants
 from Graph import CylinderGraph
 from Twist import Twist
 
@@ -16,17 +16,17 @@ class Test(unittest.TestCase):
 
     def test_find_generalized_pants(self):
         cd = CylinderDiagram("(0)-(2) (1,2,3)-(4,5) (4)-(3) (5)-(0,1)")
-        cd_g = CylinderGraph(cd)
-        self.assertEqual(cd_g.find_generalized_pants(), set([frozenset([1, 2, 3])]))
+        cd_g = CylinderGraph(cd).digraph
+        self.assertEqual(find_generalized_pants(cd_g), set([frozenset([1, 2, 3])]))
         cd = CylinderDiagram("(0,3)-(5) (1)-(0) (2,5)-(3,4) (4)-(1,2)")
-        cd_g = CylinderGraph(cd)
-        self.assertEqual(cd_g.find_generalized_pants(), set())
+        cd_g = CylinderGraph(cd).digraph
+        self.assertEqual(find_generalized_pants(cd_g), set())
         cd = CylinderDiagram("(0,2,1)-(3,4,5) (3)-(1) (4)-(2) (5)-(0)")
-        cd_g = CylinderGraph(cd)
-        self.assertEqual(cd_g.find_generalized_pants(), set([frozenset([0, 1, 2, 3])]))
+        cd_g = CylinderGraph(cd).digraph
+        self.assertEqual(find_generalized_pants(cd_g), set([frozenset([0, 1, 2, 3])]))
         cd = CylinderDiagram("(0)-(2) (1)-(3) (2,4,3)-(5,6) (5)-(4) (6)-(0,1)")
-        cd_g = CylinderGraph(cd)
-        self.assertEqual(cd_g.find_generalized_pants(), set([frozenset({0, 1, 4}), frozenset({2, 3, 4}), frozenset({0, 1, 2, 3})]))
+        cd_g = CylinderGraph(cd).digraph
+        self.assertEqual(find_generalized_pants(cd_g), set([frozenset({0, 1, 4}), frozenset({2, 3, 4}), frozenset({0, 1, 2, 3})]))
 
     def test_check_pants_condition(self):
         self.assertTrue(check_pants_condition([{1}, {2}, {3}], [[1, 2, 3]]))
