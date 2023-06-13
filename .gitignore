@@ -5,3 +5,4 @@ __pycache__
 # Not for production
 *.ipynb
 !tutorial.ipynb
+!classes.ipynb
