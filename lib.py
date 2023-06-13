@@ -1,7 +1,66 @@
-from sage.all import Partitions, SetPartitions
+from sage.all import Partitions, SetPartitions, block_matrix, matrix
+from sage.all import MixedIntegerLinearProgram
+from sage.numerical.mip import MIPSolverException
 from Graph import CylinderGraph
 from Twist import Twist
 
+
+### Graph Functions
+# TODO: Add unittests for this
+def find_generalized_pants(digraph):
+    """Finds cases when n cylinders are all only attached to the side
+    of a single cylinder. This is like a generalized version of a
+    topological pair of pants allows n pant legs.
+    
+    Input: A cylinder diagram.
+    
+    Output: A set of pants. Each pants is a frozenset consisting of the 
+    cylinders in the pants.
+    
+    Note: For Python 3.7 and higher, frozensets should maintain insertion
+    order. Thus, the first element of each pants is the waist curve and the
+    rest are the pant legs. However, we do not use this in our code."""
+
+    pants_set = set()
+    for n in digraph:
+        # If every cylinder above `C` is only adjacent to `C` along its
+        # bottom, this is a generalized pants.
+        neighbors_out = list(digraph.neighbors_out(n))
+        if all([list(digraph.neighbors_in(suc)) == [n] 
+                for suc in neighbors_out]):
+            
+            pants = frozenset([n] + neighbors_out)
+            pants_set.add(pants)
+
+        # If every cylinder below `C` is only adjacent to `C` along its
+        # top, this is a generalized pants.
+        neighbors_in = list(digraph.neighbors_in(n))
+        if all([list(digraph.neighbors_out(pre)) == [n] 
+                for pre in neighbors_in]):
+
+            pants = frozenset([n] + neighbors_in)
+            pants_set.add(pants)
+    return pants_set
+
+def find_leaves(digraph):
+    """Return the tuples (leaf, neighbor) for all leaves of `digraph`.
+    
+    A leaf is a vertex such that it only has one neighbor, where we 
+    count a vertex as a neighbor if there is either an edge coming from it
+    or an edge going to it.
+    
+    For a given leaf, `neighbor` is it's unique neighbor."""
+    leaf_neighbers = []
+    for n in digraph:
+        neighbors = set(digraph.neighbors_out(n)) | \
+                    set(digraph.neighbors_in(n))
+        if len(neighbors) == 1:
+            leaf_neighbers.append((n, next(iter(neighbors))))
+    return leaf_neighbers
+
+
+
+### Partition related
 def list_partitions(n, m, singletons=True):
     """Return a list of all ways to partition the set [1..n] into m sets.
     
@@ -38,6 +97,7 @@ def find_cylinder_in_partition(partition, cylinder):
     # If cylinder was not found in partition
     return None
 
+### Pants condition
 def check_pants_condition(partition, pants_list):
     """Check the partition satisfies any homology conditions coming from 
     the pants in pants_list.
@@ -67,11 +127,12 @@ def check_pants_condition(partition, pants_list):
 def filter_pants_condition(cyl_diag, part_list):
     """Filter out the partitions in part_list when check_pants_condition=False.
     """
-    cyl_graph = CylinderGraph(cyl_diag)
-    pants_list = list(cyl_graph.find_generic_pants())
+    cyl_graph = CylinderGraph(cyl_diag).digraph
+    pants_list = list(find_generalized_pants(cyl_graph))
     return [partition for partition in part_list 
                       if check_pants_condition(partition, pants_list)]
 
+### Homologous condition
 def check_homologous_condition(cyl_diag, partition):
     """Check that homologous cylinders are in the same M-parallel class."""
     tw = Twist(cyl_diag)
@@ -89,6 +150,7 @@ def filter_homologous_condition(cd, part_list):
     check_homologous_condition=False."""
     return [part for part in part_list if check_homologous_condition(cd, part)]
 
+### Leaf condition
 def is_simple(cd, index):
     """Check if cylinder number `index` is simple."""
     cylinder = cd.cylinders()[index]
@@ -103,8 +165,8 @@ def check_leaf_condition(cd, partition):
     
     Note that there are some assumptions for this condition.
     Refer to the paper for these assumptions."""
-    cylinder_graph = CylinderGraph(cd)
-    for leaf, neighbor in cylinder_graph.find_leaves():
+    cyl_graph = CylinderGraph(cd).digraph
+    for leaf, neighbor in find_leaves(cyl_graph):
         if is_simple(cd, leaf):
             if find_cylinder_in_partition(partition, leaf) == \
             find_cylinder_in_partition(partition, neighbor):
@@ -116,7 +178,61 @@ def filter_leaf_condition(cd, part_list):
     """
     return [part for part in part_list if check_leaf_condition(cd, part)]
 
+### Standard Twist Condition
+
+def class_matrix(tw, m_class):
+    """Stacks the core curves of the cylinders in an M-parallel class into a
+    single matrix."""
+    return (matrix([tw.core_curves[i] for i in m_class]))
+
+def ordered_partition(tw, partition):
+    """Checks the standard twist condition on a specific ordered set of the
+    equivalence classes."""
+    c0 = list(partition[0])
+    c1 = list(partition[1])
+    c2 = list(partition[2])
+
+    # Convert the equation into the form Ax - b = 0
+    A = block_matrix(3, 1,
+                        [class_matrix(tw, c0), class_matrix(tw, c1), -class_matrix(tw, c2)],
+                        subdivide=False)  
+    b = -sum(A)
+    A = A.T
+    
+    # Find any solution to the linear programming problem
+    # Ax - b = 0
+    # x >= 0
+    p = MixedIntegerLinearProgram(maximization=False)
+    x = p.new_variable(real=True, nonnegative=True)
+    p.add_constraint(A*x == b)
+    try:
+        p.solve()
+        return True
+    except MIPSolverException:
+        # MIPSolverException means that no solution exists.
+        return False
+
+def check_standard_twist_condition(tw, partition):
+    """If the partition does not have three equivalence classes, return
+    true. Otherwise, check that the equation
+    Σa_iα_i = Σb_jβ_j + Σc_kγ_k
+    has a solution for a_i,b_j,c_k >= 1."""
+
+    n = len(partition)
+    partition = list(partition)
+    for i in range(n-2):
+        for j in range(i+1, n-1):
+            for k in range(j+1, n):
+                order1 = [partition[i], partition[j], partition[k]]
+                order2 = [partition[j], partition[k], partition[i]]
+                order3 = [partition[k], partition[i], partition[j]]
+                if not any([ordered_partition(tw, order1),
+                            ordered_partition(tw, order2),
+                            ordered_partition(tw, order3)]):
+                    return False
+    return True
+
 def filter_standard_twist_condition(cd, part_list):
     tw = Twist(cd)
     return [part for part in part_list 
-                 if tw.check_standard_twist_condition(part)]
+                 if check_standard_twist_condition(tw, part)]
